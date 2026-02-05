@@ -21,38 +21,64 @@ const COMPANIES: Company[] = [
   { id: '6', name: "Start-up 'Babi Tech'", industry: "Technologie", prestige: 65 },
   { id: '7', name: "Éducation Nationale", industry: "Secteur Public", prestige: 55 },
   { id: '8', name: "Studio Graphik-Babi", industry: "Design", prestige: 70 },
-  { id: '9', name: "Sécurité 'Vigilance'", industry: "Services", prestige: 30 }
+  { id: '9', name: "Sécurité 'Vigilance'", industry: "Services", prestige: 30 },
+  { id: '10', name: "Clinique PISAM", industry: "Santé", prestige: 80 },
+  { id: '11', name: "PFO Africa", industry: "BTP", prestige: 85 },
+  { id: '12', name: "Palais de Justice", industry: "Droit", prestige: 75 }
 ];
 
 const JOBS: Job[] = [
-  // Jobs sans diplôme
-  { company: COMPANIES[3], title: "Gérant de Maquis", salary: 85000, stressLevel: 45, requirement: 10, workingHours: "17h - 02h" },
-  { company: COMPANIES[1], title: "Laveur de Bus", salary: 55000, stressLevel: 65, requirement: 5, workingHours: "05h - 14h" },
-  { company: COMPANIES[1], title: "Chauffeur de Gbaka", salary: 120000, stressLevel: 85, requirement: 15, workingHours: "04h - 22h" },
-  { company: COMPANIES[8], title: "Agent de Sécurité", salary: 110000, stressLevel: 40, requirement: 10, workingHours: "19h - 07h" },
+  // Secteur Informel
+  { company: COMPANIES[3], title: "Gérant de Maquis", salary: 85000, stressLevel: 45, requirement: 10, workingHours: "17h - 02h", category: "Secteur Informel" },
+  { company: COMPANIES[1], title: "Laveur de Bus", salary: 55000, stressLevel: 65, requirement: 5, workingHours: "05h - 14h", category: "Secteur Informel" },
+  { company: COMPANIES[1], title: "Chauffeur de Gbaka", salary: 120000, stressLevel: 85, requirement: 15, workingHours: "04h - 22h", category: "Secteur Informel" },
+  { company: COMPANIES[8], title: "Agent de Sécurité", salary: 110000, stressLevel: 40, requirement: 10, workingHours: "19h - 07h", category: "Secteur Informel" },
+  { company: COMPANIES[3], title: "Vendeur de Garba", salary: 75000, stressLevel: 50, requirement: 5, workingHours: "07h - 16h", category: "Secteur Informel" },
+  { company: COMPANIES[3], title: "Djoutai (Dockeur)", salary: 95000, stressLevel: 90, requirement: 10, workingHours: "06h - 18h", category: "Secteur Informel" },
 
-  // Informatique
-  { company: COMPANIES[5], title: "Développeur Web Junior", salary: 450000, stressLevel: 60, requirement: 60, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Informatique' },
-  { company: COMPANIES[0], title: "Ingénieur Logiciel", salary: 850000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique' },
-  { company: COMPANIES[5], title: "Expert IA / Data Scientist", salary: 1500000, stressLevel: 65, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Doctorat', requiredSpecialty: 'Informatique' },
+  // Informatique & Tech
+  { company: COMPANIES[5], title: "Technicien Maintenance", salary: 250000, stressLevel: 40, requirement: 40, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
+  { company: COMPANIES[5], title: "Développeur Web Junior", salary: 450000, stressLevel: 60, requirement: 60, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
+  { company: COMPANIES[0], title: "Ingénieur Logiciel", salary: 850000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
+  { company: COMPANIES[5], title: "Expert IA / Data Scientist", salary: 1500000, stressLevel: 65, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Doctorat', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
+  { company: COMPANIES[0], title: "Analyste Cyber-sécurité", salary: 900000, stressLevel: 80, requirement: 85, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
 
-  // Droit
-  { company: COMPANIES[8], title: "Assistant Juridique", salary: 350000, stressLevel: 45, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Droit' },
-  { company: COMPANIES[4], title: "Juriste d'Affaires", salary: 750000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Droit' },
-  { company: COMPANIES[6], title: "Professeur de Droit", salary: 1200000, stressLevel: 50, requirement: 95, workingHours: "08h - 16h", requiredDegree: 'Doctorat', requiredSpecialty: 'Droit' },
+  // Droit & Justice
+  { company: COMPANIES[11], title: "Clerc d'Avocat", salary: 200000, stressLevel: 50, requirement: 45, workingHours: "08h - 18h", requiredDegree: 'BTS', requiredSpecialty: 'Droit', category: "Droit & Justice" },
+  { company: COMPANIES[8], title: "Assistant Juridique", salary: 350000, stressLevel: 45, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Droit', category: "Droit & Justice" },
+  { company: COMPANIES[4], title: "Juriste d'Affaires", salary: 750000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Droit', category: "Droit & Justice" },
+  { company: COMPANIES[6], title: "Professeur de Droit", salary: 1200000, stressLevel: 50, requirement: 95, workingHours: "08h - 16h", requiredDegree: 'Doctorat', requiredSpecialty: 'Droit', category: "Droit & Justice" },
+  { company: COMPANIES[11], title: "Magistrat Junior", salary: 800000, stressLevel: 85, requirement: 90, workingHours: "08h - 17h", requiredDegree: 'Master', requiredSpecialty: 'Droit', category: "Droit & Justice" },
 
-  // Comptabilité / Gestion
-  { company: COMPANIES[4], title: "Comptable Junior", salary: 400000, stressLevel: 65, requirement: 65, workingHours: "08h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Comptabilité' },
-  { company: COMPANIES[4], title: "Contrôleur de Gestion", salary: 800000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité' },
-  { company: COMPANIES[4], title: "Expert Comptable", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 20h", requiredDegree: 'Doctorat', requiredSpecialty: 'Comptabilité' },
+  // Comptabilité & Finance
+  { company: COMPANIES[4], title: "Aide Comptable", salary: 180000, stressLevel: 40, requirement: 40, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
+  { company: COMPANIES[4], title: "Comptable Junior", salary: 400000, stressLevel: 65, requirement: 65, workingHours: "08h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
+  { company: COMPANIES[4], title: "Contrôleur de Gestion", salary: 800000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
+  { company: COMPANIES[4], title: "Expert Comptable", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 20h", requiredDegree: 'Doctorat', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
+  { company: COMPANIES[4], title: "Analyste Financier", salary: 950000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
 
-  // RH
-  { company: COMPANIES[0], title: "Chargé de Recrutement", salary: 380000, stressLevel: 50, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Ressources Humaines' },
-  { company: COMPANIES[0], title: "Responsable RH", salary: 900000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines' },
+  // Ressources Humaines
+  { company: COMPANIES[0], title: "Gestionnaire de Paie", salary: 280000, stressLevel: 45, requirement: 50, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
+  { company: COMPANIES[0], title: "Chargé de Recrutement", salary: 380000, stressLevel: 50, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
+  { company: COMPANIES[0], title: "Responsable RH", salary: 900000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
+  { company: COMPANIES[0], title: "Directeur RH", salary: 1600000, stressLevel: 80, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
 
-  // Marketing / Com
-  { company: COMPANIES[7], title: "Community Manager", salary: 300000, stressLevel: 40, requirement: 50, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Communication' },
-  { company: COMPANIES[0], title: "Chef de Produit", salary: 700000, stressLevel: 65, requirement: 75, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Marketing' }
+  // Santé
+  { company: COMPANIES[9], title: "Aide-Soignant", salary: 150000, stressLevel: 60, requirement: 30, workingHours: "07h - 19h", requiredDegree: 'Certification', requiredSpecialty: 'Santé', category: "Santé" },
+  { company: COMPANIES[9], title: "Infirmier d'État", salary: 350000, stressLevel: 70, requirement: 60, workingHours: "07h - 19h", requiredDegree: 'Licence', requiredSpecialty: 'Santé', category: "Santé" },
+  { company: COMPANIES[9], title: "Médecin Généraliste", salary: 850000, stressLevel: 80, requirement: 85, workingHours: "08h - 18h (Garde)", requiredDegree: 'Master', requiredSpecialty: 'Santé', category: "Santé" },
+  { company: COMPANIES[9], title: "Chirurgien Spécialiste", salary: 2500000, stressLevel: 95, requirement: 98, workingHours: "Irrégulier", requiredDegree: 'Doctorat', requiredSpecialty: 'Santé', category: "Santé" },
+
+  // BTP & Ingénierie
+  { company: COMPANIES[10], title: "Chef de Chantier Junior", salary: 400000, stressLevel: 75, requirement: 55, workingHours: "07h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Génie Civil', category: "BTP & Ingénierie" },
+  { company: COMPANIES[10], title: "Ingénieur Structure", salary: 900000, stressLevel: 70, requirement: 85, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Génie Civil', category: "BTP & Ingénierie" },
+  { company: COMPANIES[10], title: "Architecte", salary: 1200000, stressLevel: 65, requirement: 90, workingHours: "09h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Architecture', category: "BTP & Ingénierie" },
+
+  // Marketing & Communication
+  { company: COMPANIES[7], title: "Graphiste Junior", salary: 220000, stressLevel: 45, requirement: 45, workingHours: "09h - 18h", requiredDegree: 'BTS', requiredSpecialty: 'Communication', category: "Marketing & Communication" },
+  { company: COMPANIES[7], title: "Community Manager", salary: 300000, stressLevel: 40, requirement: 50, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Communication', category: "Marketing & Communication" },
+  { company: COMPANIES[0], title: "Chef de Produit", salary: 700000, stressLevel: 65, requirement: 75, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Marketing', category: "Marketing & Communication" },
+  { company: COMPANIES[0], title: "Directeur Marketing", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Marketing', category: "Marketing & Communication" }
 ];
 
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -164,6 +190,19 @@ const App: React.FC = () => {
     }
   }, [gameState.timer, loading, currentEvent]);
 
+  const triggerHospital = async () => {
+    setLoading(true);
+    const event = await gemini.generateNarrative(gameState, 'random_event', "Le joueur s'est évanoui de fatigue et a été transporté d'urgence à la PISAM. Il doit payer des frais médicaux et se reposer.");
+    if (event) {
+      event.choices = event.choices.map((c: any) => ({
+        ...c,
+        actionType: 'HOSPITAL_STAY'
+      }));
+      setCurrentEvent(event);
+    }
+    setLoading(false);
+  };
+
   const triggerRandomChallenge = async () => {
     if (currentEvent || loading) return;
     setLoading(true);
@@ -175,6 +214,12 @@ const App: React.FC = () => {
 
     const event = await gemini.generateNarrative(gameState, type as any, extra);
     if (event) setCurrentEvent(event);
+
+    // Vérification hospitalisation
+    if (gameState.player.stats.health <= 0) {
+      triggerHospital();
+    }
+
     setLoading(false);
   };
 
@@ -408,6 +453,11 @@ const App: React.FC = () => {
     const nextMonthIndex = (gameState.player.month + 1) % 12;
     const nextAge = nextMonthIndex === 0 ? gameState.player.age + 1 : gameState.player.age;
     
+    // Études automatiques
+    let eduCompleted = false;
+    let completedDegreeName = "";
+    const currentEdu = gameState.player.educationState;
+
     const totalMonthlyLoanPayment = gameState.player.loans.reduce((acc, l) => acc + l.monthlyPayment, 0);
     const hasActiveLoans = gameState.player.loans.length > 0;
     
@@ -450,6 +500,22 @@ const App: React.FC = () => {
       const healthBonus = prev.player.assets.properties.reduce((acc, p) => acc + p.furnishings.reduce((fAcc, f) => fAcc + f.healthBonus, 0), 0) / 10;
       const happyBonus = prev.player.assets.properties.reduce((acc, p) => acc + p.furnishings.reduce((fAcc, f) => fAcc + f.happinessBonus, 0), 0) / 10;
 
+      let newEduState = { ...prev.player.educationState };
+      if (newEduState.currentDegree) {
+        newEduState.monthsCompleted += 1;
+        const requiredMonths = newEduState.currentDegree === 'BTS' ? 3 : (newEduState.currentDegree === 'Certification' ? 2 : 6);
+
+        if (newEduState.monthsCompleted >= requiredMonths) {
+          eduCompleted = true;
+          completedDegreeName = newEduState.currentDegree;
+          newEduState.degreesObtained = [...newEduState.degreesObtained, newEduState.currentDegree];
+          newEduState.currentDegree = null;
+          newEduState.monthsCompleted = 0;
+        }
+      }
+
+      const isStudyingAndWorking = prev.player.job && prev.player.educationState.currentDegree;
+
       return {
         ...prev,
         player: {
@@ -457,16 +523,26 @@ const App: React.FC = () => {
           age: nextAge,
           month: nextMonthIndex,
           loans: updatedLoans,
+          education: completedDegreeName || prev.player.education,
+          educationState: newEduState,
           stats: {
             ...prev.player.stats,
             money: prev.player.stats.money + netIncome,
-            health: Math.min(100, prev.player.stats.health + healthBonus - (prev.player.age > 40 && nextMonthIndex === 0 ? 3 : 0)),
+            health: Math.min(100, Math.max(0, prev.player.stats.health + healthBonus - (prev.player.age > 40 && nextMonthIndex === 0 ? 3 : 0) - (isStudyingAndWorking ? 8 : 0))),
             happiness: Math.min(100, prev.player.stats.happiness + happyBonus),
-            stress: Math.max(0, prev.player.stats.stress + (prev.player.job ? 2 : 0) + (hasActiveLoans ? 5 : -5) + (childrenCount * 2))
+            stress: Math.max(0, Math.min(100, prev.player.stats.stress + (prev.player.job ? 2 : 0) + (hasActiveLoans ? 5 : -5) + (childrenCount * 2) + (isStudyingAndWorking ? 15 : 0)))
           }
         }
       };
     });
+
+    if (eduCompleted) {
+      addLog(`🎓 DIPLÔME OBTENU : Félicitations ! Tu as terminé ton ${completedDegreeName}.`, 'positive');
+    }
+
+    if (gameState.player.job && gameState.player.educationState.currentDegree) {
+      addLog(`😫 SURMENAGE : Travailler et étudier en même temps t'épuise énormément !`, 'negative');
+    }
 
     if (gameState.player.job) {
       addLog(`💰 VIREMENT REÇU : +${gameState.player.job.salary.toLocaleString()} FCFA (Salaire ${MONTHS[gameState.player.month]})`, 'positive');
@@ -489,6 +565,12 @@ const App: React.FC = () => {
     }
 
     if (event) setCurrentEvent(event);
+
+    // Vérification hospitalisation
+    if (gameState.player.stats.health <= 0) {
+      triggerHospital();
+    }
+
     setLoading(false);
   };
 
@@ -520,8 +602,8 @@ const App: React.FC = () => {
     addLog(`🏦 PRÊT ACCORDÉ : Tu as reçu ${amount.toLocaleString()} FCFA. Remboursement: ${monthlyPayment.toLocaleString()} FCFA/mois.`, 'positive');
   };
 
-  const enrollDegree = (degree: 'Licence' | 'Master' | 'Doctorat', specialty: string) => {
-    const fees = { 'Licence': 200000, 'Master': 500000, 'Doctorat': 1000000 };
+  const enrollDegree = (degree: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification', specialty: string) => {
+    const fees = { 'Certification': 50000, 'BTS': 100000, 'Licence': 200000, 'Master': 500000, 'Doctorat': 1000000 };
     const fee = fees[degree];
 
     if (gameState.player.stats.money < fee) {
@@ -554,26 +636,6 @@ const App: React.FC = () => {
     addLog(`🎓 ÉTUDES : Inscription en ${degree} (${specialty}) réussie !`, 'positive');
   };
 
-  const studyAction = async () => {
-    if (!gameState.player.educationState.currentDegree) return;
-
-    setLoading(true);
-    const degree = gameState.player.educationState.currentDegree;
-    const specialty = gameState.player.educationState.specialty;
-    const progress = gameState.player.educationState.monthsCompleted + 1;
-
-    const event = await gemini.generateNarrative(gameState, 'activity', `Le joueur étudie pour son ${degree} en ${specialty}. Mois ${progress}/6.`);
-
-    if (event) {
-      // Add specialized action for completing study month
-      event.choices = event.choices.map((c: any) => ({
-        ...c,
-        actionType: 'STUDY_PROGRESS'
-      }));
-      setCurrentEvent(event);
-    }
-    setLoading(false);
-  };
 
   const applyForJob = async (job: Job) => {
     if (gameState.player.stats.smarts < job.requirement) {
@@ -616,37 +678,6 @@ const App: React.FC = () => {
       setGameState(prev => ({ ...prev, player: { ...prev.player, job: choice.jobToApply }}));
       addLog(`✅ EMBAUCHÉ : Tu es ${choice.jobToApply.title} !`, 'positive');
       setActiveTab('vie');
-    } else if (choice.actionType === 'STUDY_PROGRESS') {
-      setGameState(prev => {
-        const newState = { ...prev };
-        const edu = newState.player.educationState;
-        const nextMonth = edu.monthsCompleted + 1;
-
-        if (nextMonth >= 6) {
-          addLog(`🎓 DIPLÔME OBTENU : Félicitations, tu as décroché ton ${edu.currentDegree} en ${edu.specialty} !`, 'positive');
-          return {
-            ...prev,
-            player: {
-              ...prev.player,
-              education: edu.currentDegree!,
-              educationState: {
-                ...edu,
-                monthsCompleted: 0,
-                currentDegree: null,
-                degreesObtained: [...edu.degreesObtained, edu.currentDegree!]
-              }
-            }
-          };
-        } else {
-          return {
-            ...prev,
-            player: {
-              ...prev.player,
-              educationState: { ...edu, monthsCompleted: nextMonth }
-            }
-          };
-        }
-      });
     } else if (choice.actionType === 'FAIL') {
       addLog(`❌ ÉCHEC : Ça n'a pas marché.`, 'negative');
     } else if (choice.actionType === 'NEW_RELATION') {
@@ -693,10 +724,45 @@ const App: React.FC = () => {
         }
       }));
       addLog(`👶 NAISSANCE : Bienvenue à ${childName} dans la famille !`, 'positive');
+    } else if (choice.actionType === 'HOSPITAL_STAY') {
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          stats: {
+            ...prev.player.stats,
+            health: 50,
+            stress: 20,
+            money: prev.player.stats.money - 150000
+          }
+        }
+      }));
+      addLog(`🏥 HÔPITAL : Tu as été soigné. Frais: 150.000 FCFA. Ta santé est revenue à 50%.`, 'neutral');
     }
     
     addLog(choice.resultLog || choice.text, (choice.effect.happiness || 0) < 0 || (choice.effect.health || 0) < 0 ? 'negative' : 'positive');
     setCurrentEvent(null);
+  };
+
+  const sleepAction = () => {
+    updateStats({ stress: -10, health: 5 });
+    addLog("🛌 REPOS : Une bonne sieste ça fait du bien ! Ton stress diminue.", "positive");
+  };
+
+  const takeRestActivity = (type: 'Spa' | 'Vacances') => {
+    const cost = type === 'Spa' ? 50000 : 300000;
+    if (gameState.player.stats.money < cost) {
+      addLog("Pas assez d'argent !", "negative");
+      return;
+    }
+
+    if (type === 'Spa') {
+      updateStats({ money: -cost, health: 15, stress: -25, happiness: 10 });
+      addLog("🧖 SPA : Un massage à la bougie... Tu es tout neuf !", "positive");
+    } else {
+      updateStats({ money: -cost, health: 30, stress: -60, happiness: 50 });
+      addLog("🏝️ VACANCES : Un séjour de rêve à Assinie ! Tu es regonflé à bloc.", "positive");
+    }
   };
 
   const quitJob = () => {
@@ -885,47 +951,70 @@ const App: React.FC = () => {
         ) : (
           <div className="h-full">
             {activeTab === 'vie' && (
-              <button
-                onClick={() => {
-                  handleNextStep();
-                  setGameState(prev => ({ ...prev, timer: 180 }));
-                }}
-                className="w-full h-full bg-orange-600 hover:bg-orange-700 text-white rounded-3xl shadow-xl shadow-orange-600/20 flex flex-col items-center justify-center gap-2 p-6 transition-all active:scale-95 group"
-              >
-                <i className={`fa-solid ${gameState.player.job ? 'fa-briefcase' : 'fa-play'} text-3xl group-hover:scale-110 transition-transform`}></i>
-                <div className="text-center">
-                  <span className="block text-xs font-black uppercase tracking-widest opacity-80">Cycle Mensuel ({Math.floor(gameState.timer / 60)}:{(gameState.timer % 60).toString().padStart(2, '0')})</span>
-                  <span className="block text-2xl font-black italic">{gameState.player.job ? "TRAVAILLER (1 MOIS)" : "VIVRE LE MOIS"}</span>
-                </div>
-              </button>
+              <div className="flex flex-col gap-3 h-full">
+                <button
+                  onClick={() => {
+                    handleNextStep();
+                    setGameState(prev => ({ ...prev, timer: 180 }));
+                  }}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white rounded-3xl shadow-xl shadow-orange-600/20 flex flex-col items-center justify-center gap-2 p-4 transition-all active:scale-95 group"
+                >
+                  <i className={`fa-solid ${gameState.player.job ? 'fa-briefcase' : 'fa-play'} text-2xl group-hover:scale-110 transition-transform`}></i>
+                  <div className="text-center">
+                    <span className="block text-[10px] font-black uppercase tracking-widest opacity-80">Cycle Mensuel ({Math.floor(gameState.timer / 60)}:{(gameState.timer % 60).toString().padStart(2, '0')})</span>
+                    <span className="block text-xl font-black italic">{gameState.player.job ? "TRAVAILLER" : "VIVRE LE MOIS"}</span>
+                  </div>
+                </button>
+                <button
+                  onClick={sleepAction}
+                  className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+                >
+                  <i className="fa-solid fa-bed"></i> Dormir (Réduit Stress)
+                </button>
+              </div>
             )}
 
             {activeTab === 'travail' && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center px-1">
+              <div className="space-y-4 flex flex-col h-full">
+                <div className="flex justify-between items-center px-1 shrink-0">
                    <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Marché de l'Emploi</h3>
                    {gameState.player.job && (
                      <button onClick={quitJob} className="text-[9px] font-black text-rose-500 uppercase border border-rose-200 px-3 py-1 rounded-lg hover:bg-rose-50 transition-all active:scale-90">Démissionner</button>
                    )}
                 </div>
-                <div className="grid grid-cols-1 gap-3 overflow-y-auto max-h-[140px] pr-1">
+                <div className="flex-1 overflow-y-auto pr-1 space-y-6">
                   {gameState.player.job ? (
-                    <div className="p-5 bg-emerald-50 border-2 border-emerald-100 rounded-3xl flex flex-col items-center text-center">
-                       <i className="fa-solid fa-briefcase text-emerald-500 text-2xl mb-2"></i>
-                       <p className="text-xs font-black text-emerald-900 uppercase">{gameState.player.job.title}</p>
-                       <p className="text-[10px] font-bold text-emerald-600 mt-1 uppercase">{gameState.player.job.salary.toLocaleString()} FCFA/mois</p>
+                    <div className="p-8 bg-emerald-50 border-2 border-emerald-100 rounded-[2.5rem] flex flex-col items-center text-center shadow-inner">
+                       <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-4">
+                        <i className="fa-solid fa-briefcase text-emerald-500 text-3xl"></i>
+                       </div>
+                       <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-1">{gameState.player.job.company.name}</p>
+                       <p className="text-xl font-black text-emerald-950 uppercase">{gameState.player.job.title}</p>
+                       <div className="h-px w-12 bg-emerald-200 my-4"></div>
+                       <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest">{gameState.player.job.salary.toLocaleString()} FCFA / MOIS</p>
                     </div>
                   ) : (
-                    JOBS.map((j, i) => (
-                      <button key={i} onClick={() => applyForJob(j)} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 transition-all text-left border-slate-100 hover:border-blue-500 active:scale-95 group">
-                         <div className="flex flex-col">
-                           <p className="text-[10px] font-black text-blue-600 uppercase tracking-tight">{j.company.name}</p>
-                           <p className="text-sm font-black text-slate-950">{j.title}</p>
-                         </div>
-                         <div className="text-right flex flex-col items-end">
-                           <p className="text-xs font-black text-emerald-600">{j.salary.toLocaleString()} <small>FCFA</small></p>
-                         </div>
-                      </button>
+                    Array.from(new Set(JOBS.map(j => j.category))).map(cat => (
+                      <div key={cat} className="space-y-3">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-2 border-orange-500 pl-2 ml-1">{cat}</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          {JOBS.filter(j => j.category === cat).map((j, i) => (
+                            <button key={i} onClick={() => applyForJob(j)} className="flex items-center justify-between p-4 bg-white rounded-2xl border-2 transition-all text-left border-slate-100 hover:border-blue-500 active:scale-95 group shadow-sm">
+                               <div className="flex flex-col">
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight group-hover:text-blue-600 transition-colors">{j.company.name}</p>
+                                 <p className="text-sm font-black text-slate-900">{j.title}</p>
+                                 <div className="flex gap-2 mt-1">
+                                    {j.requiredDegree && <span className="text-[8px] font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{j.requiredDegree}</span>}
+                                    {j.requiredSpecialty && <span className="text-[8px] font-bold bg-blue-50 px-1.5 py-0.5 rounded text-blue-500">{j.requiredSpecialty}</span>}
+                                 </div>
+                               </div>
+                               <div className="text-right flex flex-col items-end">
+                                 <p className="text-xs font-black text-emerald-600">{j.salary.toLocaleString()} <small>FCFA</small></p>
+                               </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     ))
                   )}
                 </div>
@@ -1002,15 +1091,24 @@ const App: React.FC = () => {
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Études</span>
                  </button>
                  {[
+                   { label: 'Spa', icon: 'fa-spa', color: 'text-teal-500', action: () => takeRestActivity('Spa') },
+                   { label: 'Vacances', icon: 'fa-umbrella-beach', color: 'text-blue-500', action: () => takeRestActivity('Vacances') },
                    { label: 'Maquis', icon: 'fa-beer-mug-empty', color: 'text-amber-500', ctx: 'Activity: Maquis' },
                    { label: 'Gym', icon: 'fa-dumbbell', color: 'text-rose-500', ctx: 'Activity: Gym' },
                    { label: 'Clinique', icon: 'fa-hospital', color: 'text-emerald-500', ctx: 'Activity: Hospital' },
                    { label: 'Église', icon: 'fa-hands-praying', color: 'text-indigo-500', ctx: 'Activity: Church' }
                  ].map(act => (
-                   <button key={act.label} onClick={async () => { setLoading(true); const ev = await gemini.generateNarrative(gameState, 'activity', act.ctx); if(ev) setCurrentEvent(ev); setLoading(false); }} className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
-                     <i className={`fa-solid ${act.icon} ${act.color} text-2xl mb-1`}></i>
-                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">{act.label}</span>
-                   </button>
+                   act.action ? (
+                     <button key={act.label} onClick={act.action} className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
+                       <i className={`fa-solid ${act.icon} ${act.color} text-2xl mb-1`}></i>
+                       <span className="text-[10px] font-black uppercase text-slate-900 text-center">{act.label}</span>
+                     </button>
+                   ) : (
+                    <button key={act.label} onClick={async () => { setLoading(true); const ev = await gemini.generateNarrative(gameState, 'activity', act.ctx); if(ev) setCurrentEvent(ev); setLoading(false); }} className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
+                      <i className={`fa-solid ${act.icon} ${act.color} text-2xl mb-1`}></i>
+                      <span className="text-[10px] font-black uppercase text-slate-900 text-center">{act.label}</span>
+                    </button>
+                   )
                  ))}
                </div>
             )}
@@ -1216,22 +1314,29 @@ const App: React.FC = () => {
                    {selectedPropertyId === 'education' ? (
                       <div className="space-y-6">
                         {gameState.player.educationState.currentDegree ? (
-                          <div className="p-6 bg-blue-50 rounded-3xl text-center space-y-4">
+                          <div className="p-6 bg-blue-50 rounded-3xl text-center space-y-4 border-2 border-blue-100">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                              <i className="fa-solid fa-graduation-cap text-blue-500 text-xl"></i>
+                            </div>
                             <p className="text-xs font-black text-blue-900 uppercase tracking-widest">Études en cours</p>
                             <p className="text-xl font-black text-blue-600">{gameState.player.educationState.currentDegree} en {gameState.player.educationState.specialty}</p>
-                            <div className="w-full bg-blue-200 h-2 rounded-full">
-                               <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${(gameState.player.educationState.monthsCompleted / 6) * 100}%` }}></div>
+                            <div className="w-full bg-blue-200 h-3 rounded-full overflow-hidden">
+                               <div className="bg-blue-600 h-full transition-all duration-1000" style={{ width: `${(gameState.player.educationState.monthsCompleted / (gameState.player.educationState.currentDegree === 'BTS' ? 3 : (gameState.player.educationState.currentDegree === 'Certification' ? 2 : 6))) * 100}%` }}></div>
                             </div>
-                            <p className="text-[10px] font-bold text-blue-400 uppercase">{gameState.player.educationState.monthsCompleted} / 6 MOIS COMPLÉTÉS</p>
-                            <button onClick={() => { studyAction(); setSelectedPropertyId(null); }} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase active:scale-95 transition-all">Étudier (1 mois)</button>
+                            <p className="text-[10px] font-bold text-blue-400 uppercase">
+                              {gameState.player.educationState.monthsCompleted} / {gameState.player.educationState.currentDegree === 'BTS' ? 3 : (gameState.player.educationState.currentDegree === 'Certification' ? 2 : 6)} MOIS
+                            </p>
+                            <p className="text-[9px] font-black text-slate-400 italic">La progression est automatique chaque mois.</p>
                           </div>
                         ) : (
                           <div className="space-y-4">
-                            <p className="text-[10px] font-black text-slate-400 uppercase">S'inscrire à un diplôme</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase">S'inscrire à une formation</p>
                             {[
-                              { level: 'Licence', price: 200000 },
-                              { level: 'Master', price: 500000 },
-                              { level: 'Doctorat', price: 1000000 }
+                              { level: 'Certification', price: 50000, duration: '2 mois' },
+                              { level: 'BTS', price: 100000, duration: '3 mois' },
+                              { level: 'Licence', price: 200000, duration: '6 mois' },
+                              { level: 'Master', price: 500000, duration: '6 mois' },
+                              { level: 'Doctorat', price: 1000000, duration: '6 mois' }
                             ].map(d => (
                               <div key={d.level} className="p-4 border-2 border-slate-100 rounded-2xl space-y-3">
                                 <div className="flex justify-between items-center">
@@ -1256,6 +1361,9 @@ const App: React.FC = () => {
                                   <option value="Gestion Commerciale">Gestion Commerciale</option>
                                   <option value="Marketing">Marketing</option>
                                   <option value="Communication">Communication</option>
+                                  <option value="Santé">Santé</option>
+                                  <option value="Génie Civil">Génie Civil</option>
+                                  <option value="Architecture">Architecture</option>
                                 </select>
                               </div>
                             ))}
