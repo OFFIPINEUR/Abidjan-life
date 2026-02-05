@@ -34,13 +34,22 @@ export interface Loan {
   monthsRemaining: number;
 }
 
+export interface Furniture {
+  id: string;
+  name: string;
+  price: number;
+  healthBonus: number;
+  happinessBonus: number;
+}
+
 export interface Property {
   id: string;
   name: string;
-  location: string;
+  location: string; // Neighborhood
   type: 'RENT' | 'OWN';
   price: number;
   monthlyCost: number;
+  furnishings: Furniture[];
 }
 
 export interface Vehicle {
@@ -48,13 +57,17 @@ export interface Vehicle {
   name: string;
   price: number;
   prestige: number;
+  isBusiness: boolean; // For Gbakas
 }
 
 export interface Relationship {
   id: string;
   name: string;
-  type: 'Famille' | 'Ami' | 'Amour' | 'Collègue';
+  type: 'Famille' | 'Ami' | 'Amour' | 'Collègue' | 'Conjoint' | 'Enfant';
   level: number;
+  isPartner?: boolean;
+  isSpouse?: boolean;
+  livingTogether?: boolean;
 }
 
 export interface LogEntry {
@@ -63,6 +76,21 @@ export interface LogEntry {
   month?: number;
   text: string;
   type: 'positive' | 'negative' | 'neutral' | 'event';
+}
+
+export interface Business {
+  id: string;
+  name: string;
+  type: 'Gbaka' | 'Boutique' | 'Maquis' | 'Transport';
+  investment: number;
+  monthlyRevenue: number;
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  type: 'Phone' | 'Gift';
+  value: number;
 }
 
 export interface GameState {
@@ -82,5 +110,7 @@ export interface GameState {
     loans: Loan[]; // Suivi des emprunts
     logs: LogEntry[];
     education: string;
+    inventory: InventoryItem[];
+    businesses: Business[];
   };
 }

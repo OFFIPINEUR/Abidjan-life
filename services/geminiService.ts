@@ -21,29 +21,40 @@ export class GeminiService {
 
   async generateNarrative(
     state: GameState, 
-    type: 'yearly' | 'interview' | 'social' | 'legal' | 'activity' | 'job_challenge' | 'debt_event' | 'social_npc' | 'shopping' | 'random_event',
+    type: 'yearly' | 'interview' | 'social' | 'legal' | 'activity' | 'job_challenge' | 'debt_event' | 'social_npc' | 'shopping' | 'random_event' | 'dating' | 'marriage' | 'business_event' | 'child_event' | 'family_interaction',
     extra?: string
   ) {
     // Calcul des dettes pour le contexte de l'IA
     const totalDebt = state.player.loans.reduce((acc, l) => acc + l.remainingAmount, 0);
     const monthlyDebtPayment = state.player.loans.reduce((acc, l) => acc + l.monthlyPayment, 0);
+    const hasPhone = state.player.inventory.some(item => item.type === 'Phone');
+    const spouse = state.player.relations.find(r => r.isSpouse);
+    const children = state.player.relations.filter(r => r.type === 'Enfant');
+    const businesses = state.player.businesses.map(b => b.name).join(', ');
     
     const prompt = `
       Tu es le narrateur de "Abidjan Life", un jeu de simulation de vie réaliste en Côte d'Ivoire.
       Joueur: ${state.player.name}, ${state.player.age} ans.
       Statut: ${state.player.job ? state.player.job.title + " chez " + state.player.job.company.name : "Sans emploi"}.
       Stats: Santé ${state.player.stats.health}, Bonheur ${state.player.stats.happiness}, Smarts ${state.player.stats.smarts}, Argent ${state.player.stats.money} FCFA.
+      Famille: ${spouse ? 'Marié(e) à ' + spouse.name : 'Célibataire'}, ${children.length} enfant(s).
+      Patrimoine: ${state.player.assets.properties.length} maison(s), ${state.player.assets.vehicles.length} véhicule(s).
+      Business: ${businesses || 'Aucun'}.
       Dette Totale: ${totalDebt} FCFA. Remboursement mensuel: ${monthlyDebtPayment} FCFA.
+      Téléphone: ${hasPhone ? 'Possède un smartphone' : 'Pas de téléphone'}.
       Type d'événement: ${type}. ${extra || ''}
 
       CONSIGNES SPÉCIFIQUES:
-      1. Ton: Authentique Abidjanais (Nouchi, humour, "Vieux Père"). Utilise des expressions comme "C'est comment ?", "Tu connais l'homme", "Faut pas taper poteau".
+      1. Ton: Authentique Abidjanais (Nouchi, humour, "Vieux Père"). Utilise des expressions comme "C'est comment ?", "Tu connais l'homme", "Faut pas taper poteau", "Dja foule", "C'est gâté".
       2. Si 'social_npc': Tu joues le rôle de ${extra?.split(':')[1] || 'un ami'}. Donne un conseil de sage ou une opportunité.
-      3. Si 'shopping': Le joueur est dans un centre commercial (Cap Sud, Prima, Cosmos Yopougon). Propose des articles à acheter qui boostent les 'Looks' ou le 'Bonheur'.
+      3. Si 'shopping': Propose des articles (cadeaux, meubles, tel) à Abidjan. Boostent Looks, Santé ou Bonheur.
       4. Si 'interview': Simule une question cruciale. Un choix doit avoir actionType: 'HIRE', les autres 'FAIL'.
-      5. Si 'job_challenge': Défi pro réaliste à Abidjan (problème avec un collègue, erreur technique, opportunité, etc.).
-      6. Si 'random_event': Incident imprévu de la vie quotidienne à Abidjan (renverser quelque chose, embouteillage, rencontre fortuite, petite galère).
-      7. Retourne UNIQUEMENT du JSON.
+      5. Si 'dating': Rencontre galante ou site de rencontre. Propose des choix pour séduire.
+      6. Si 'marriage': Organisation du mariage ou demande. Coûts élevés (dot).
+      7. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
+      8. Si 'child_event': Événement lié aux enfants (école, maladie, joie).
+      9. Si 'random_event': Incident de la vie quotidienne à Babi.
+      10. Retourne UNIQUEMENT du JSON.
     `;
 
     try {
