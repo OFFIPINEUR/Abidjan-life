@@ -25,16 +25,34 @@ const COMPANIES: Company[] = [
 ];
 
 const JOBS: Job[] = [
+  // Jobs sans diplôme
   { company: COMPANIES[3], title: "Gérant de Maquis", salary: 85000, stressLevel: 45, requirement: 10, workingHours: "17h - 02h" },
   { company: COMPANIES[1], title: "Laveur de Bus", salary: 55000, stressLevel: 65, requirement: 5, workingHours: "05h - 14h" },
-  { company: COMPANIES[0], title: "Conseiller Client", salary: 280000, stressLevel: 55, requirement: 45, workingHours: "08h - 17h" },
-  { company: COMPANIES[4], title: "Analyste Junior", salary: 650000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h" },
-  { company: COMPANIES[5], title: "Développeur Web", salary: 450000, stressLevel: 60, requirement: 70, workingHours: "09h - 18h" },
-  { company: COMPANIES[7], title: "Infographiste Créatif", salary: 350000, stressLevel: 50, requirement: 55, workingHours: "09h - 17h" },
-  { company: COMPANIES[6], title: "Professeur de Lycée", salary: 320000, stressLevel: 50, requirement: 60, workingHours: "07h - 16h" },
   { company: COMPANIES[1], title: "Chauffeur de Gbaka", salary: 120000, stressLevel: 85, requirement: 15, workingHours: "04h - 22h" },
   { company: COMPANIES[8], title: "Agent de Sécurité", salary: 110000, stressLevel: 40, requirement: 10, workingHours: "19h - 07h" },
-  { company: COMPANIES[5], title: "Data Scientist", salary: 850000, stressLevel: 65, requirement: 95, workingHours: "08h - 18h" }
+
+  // Informatique
+  { company: COMPANIES[5], title: "Développeur Web Junior", salary: 450000, stressLevel: 60, requirement: 60, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Informatique' },
+  { company: COMPANIES[0], title: "Ingénieur Logiciel", salary: 850000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique' },
+  { company: COMPANIES[5], title: "Expert IA / Data Scientist", salary: 1500000, stressLevel: 65, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Doctorat', requiredSpecialty: 'Informatique' },
+
+  // Droit
+  { company: COMPANIES[8], title: "Assistant Juridique", salary: 350000, stressLevel: 45, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Droit' },
+  { company: COMPANIES[4], title: "Juriste d'Affaires", salary: 750000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Droit' },
+  { company: COMPANIES[6], title: "Professeur de Droit", salary: 1200000, stressLevel: 50, requirement: 95, workingHours: "08h - 16h", requiredDegree: 'Doctorat', requiredSpecialty: 'Droit' },
+
+  // Comptabilité / Gestion
+  { company: COMPANIES[4], title: "Comptable Junior", salary: 400000, stressLevel: 65, requirement: 65, workingHours: "08h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Comptabilité' },
+  { company: COMPANIES[4], title: "Contrôleur de Gestion", salary: 800000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité' },
+  { company: COMPANIES[4], title: "Expert Comptable", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 20h", requiredDegree: 'Doctorat', requiredSpecialty: 'Comptabilité' },
+
+  // RH
+  { company: COMPANIES[0], title: "Chargé de Recrutement", salary: 380000, stressLevel: 50, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Ressources Humaines' },
+  { company: COMPANIES[0], title: "Responsable RH", salary: 900000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines' },
+
+  // Marketing / Com
+  { company: COMPANIES[7], title: "Community Manager", salary: 300000, stressLevel: 40, requirement: 50, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Communication' },
+  { company: COMPANIES[0], title: "Chef de Produit", salary: 700000, stressLevel: 65, requirement: 75, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Marketing' }
 ];
 
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -80,17 +98,24 @@ const App: React.FC = () => {
     timer: 180,
     player: {
       name: "",
+      gender: "Homme",
       age: 18,
       month: 0,
       job: null,
       stats: INITIAL_STATS,
       relations: [
-        { id: '1', name: 'Vieux Père Koffi', type: 'Ami', level: 75 },
-        { id: '2', name: 'Maman Brigitte', type: 'Famille', level: 95 }
+        { id: '1', name: 'Vieux Père Koffi', type: 'Ami', level: 75, gender: 'Homme' },
+        { id: '2', name: 'Maman Brigitte', type: 'Famille', level: 95, gender: 'Femme' }
       ],
       assets: { properties: [], vehicles: [] },
       loans: [],
       education: "Baccalauréat",
+      educationState: {
+        currentDegree: null,
+        specialty: null,
+        monthsCompleted: 0,
+        degreesObtained: ["Baccalauréat"]
+      },
       logs: [],
       inventory: [],
       businesses: []
@@ -495,11 +520,83 @@ const App: React.FC = () => {
     addLog(`🏦 PRÊT ACCORDÉ : Tu as reçu ${amount.toLocaleString()} FCFA. Remboursement: ${monthlyPayment.toLocaleString()} FCFA/mois.`, 'positive');
   };
 
+  const enrollDegree = (degree: 'Licence' | 'Master' | 'Doctorat', specialty: string) => {
+    const fees = { 'Licence': 200000, 'Master': 500000, 'Doctorat': 1000000 };
+    const fee = fees[degree];
+
+    if (gameState.player.stats.money < fee) {
+      addLog(`❌ Pas assez d'argent pour l'inscription en ${degree} (${fee.toLocaleString()} FCFA).`, 'negative');
+      return;
+    }
+
+    if (degree === 'Master' && !gameState.player.educationState.degreesObtained.includes('Licence')) {
+      addLog("❌ Tu dois avoir une Licence avant de t'inscrire en Master.", 'negative');
+      return;
+    }
+    if (degree === 'Doctorat' && !gameState.player.educationState.degreesObtained.includes('Master')) {
+      addLog("❌ Tu dois avoir un Master avant de t'inscrire en Doctorat.", 'negative');
+      return;
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      player: {
+        ...prev.player,
+        stats: { ...prev.player.stats, money: prev.player.stats.money - fee },
+        educationState: {
+          ...prev.player.educationState,
+          currentDegree: degree,
+          specialty: specialty,
+          monthsCompleted: 0
+        }
+      }
+    }));
+    addLog(`🎓 ÉTUDES : Inscription en ${degree} (${specialty}) réussie !`, 'positive');
+  };
+
+  const studyAction = async () => {
+    if (!gameState.player.educationState.currentDegree) return;
+
+    setLoading(true);
+    const degree = gameState.player.educationState.currentDegree;
+    const specialty = gameState.player.educationState.specialty;
+    const progress = gameState.player.educationState.monthsCompleted + 1;
+
+    const event = await gemini.generateNarrative(gameState, 'activity', `Le joueur étudie pour son ${degree} en ${specialty}. Mois ${progress}/6.`);
+
+    if (event) {
+      // Add specialized action for completing study month
+      event.choices = event.choices.map((c: any) => ({
+        ...c,
+        actionType: 'STUDY_PROGRESS'
+      }));
+      setCurrentEvent(event);
+    }
+    setLoading(false);
+  };
+
   const applyForJob = async (job: Job) => {
     if (gameState.player.stats.smarts < job.requirement) {
       addLog(`❌ Dossier rejeté : Niveau d'intelligence insuffisant.`, 'negative');
       return;
     }
+
+    if (job.requiredDegree && !gameState.player.educationState.degreesObtained.includes(job.requiredDegree)) {
+      addLog(`❌ Dossier rejeté : Diplôme de ${job.requiredDegree} requis.`, 'negative');
+      return;
+    }
+
+    if (job.requiredSpecialty && gameState.player.educationState.specialty !== job.requiredSpecialty) {
+       // On vérifie si un des diplômes obtenus correspond à la spécialité ?
+       // Pour simplifier, on vérifie la spécialité actuelle ou la dernière ?
+       // Ajoutons specialty aux degreesObtained ? Non, gardons une trace plus simple.
+       // Disons que specialty est global pour l'instant ou lié au dernier diplôme.
+       if (gameState.player.educationState.specialty !== job.requiredSpecialty) {
+         addLog(`❌ Dossier rejeté : Spécialité ${job.requiredSpecialty} requise.`, 'negative');
+         return;
+       }
+    }
+
     setLoading(true);
     const event = await gemini.generateNarrative(gameState, 'interview', `Poste: ${job.title} chez ${job.company.name}. Salaire: ${job.salary} FCFA.`);
     if (event) {
@@ -519,6 +616,37 @@ const App: React.FC = () => {
       setGameState(prev => ({ ...prev, player: { ...prev.player, job: choice.jobToApply }}));
       addLog(`✅ EMBAUCHÉ : Tu es ${choice.jobToApply.title} !`, 'positive');
       setActiveTab('vie');
+    } else if (choice.actionType === 'STUDY_PROGRESS') {
+      setGameState(prev => {
+        const newState = { ...prev };
+        const edu = newState.player.educationState;
+        const nextMonth = edu.monthsCompleted + 1;
+
+        if (nextMonth >= 6) {
+          addLog(`🎓 DIPLÔME OBTENU : Félicitations, tu as décroché ton ${edu.currentDegree} en ${edu.specialty} !`, 'positive');
+          return {
+            ...prev,
+            player: {
+              ...prev.player,
+              education: edu.currentDegree!,
+              educationState: {
+                ...edu,
+                monthsCompleted: 0,
+                currentDegree: null,
+                degreesObtained: [...edu.degreesObtained, edu.currentDegree!]
+              }
+            }
+          };
+        } else {
+          return {
+            ...prev,
+            player: {
+              ...prev.player,
+              educationState: { ...edu, monthsCompleted: nextMonth }
+            }
+          };
+        }
+      });
     } else if (choice.actionType === 'FAIL') {
       addLog(`❌ ÉCHEC : Ça n'a pas marché.`, 'negative');
     } else if (choice.actionType === 'NEW_RELATION') {
@@ -526,7 +654,8 @@ const App: React.FC = () => {
         id: Date.now().toString(),
         name: choice.resultLog.split(' ')[0] || "Nouvelle Connaissance",
         type: 'Ami',
-        level: 20
+        level: 20,
+        gender: Math.random() > 0.5 ? 'Homme' : 'Femme'
       };
       setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [...prev.player.relations, newRel] }}));
     } else if (choice.actionType === 'MARRY' && choice.partnerId) {
@@ -553,7 +682,8 @@ const App: React.FC = () => {
         id: Date.now().toString(),
         name: childName,
         type: 'Enfant',
-        level: 100
+        level: 100,
+        gender: Math.random() > 0.5 ? 'Homme' : 'Femme'
       };
       setGameState(prev => ({
         ...prev,
@@ -633,16 +763,15 @@ const App: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
-               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Âge</label>
-               <input type="number" min="18" max="30" className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl focus:border-orange-600 outline-none font-bold text-white" value={gameState.player.age} onChange={e => setGameState(p => ({ ...p, player: { ...p.player, age: parseInt(e.target.value) }}))} />
+               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Genre</label>
+               <select className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl focus:border-orange-600 outline-none font-bold text-sm text-white" value={gameState.player.gender} onChange={e => setGameState(p => ({ ...p, player: { ...p.player, gender: e.target.value as 'Homme' | 'Femme' }}))}>
+                 <option value="Homme">Homme</option>
+                 <option value="Femme">Femme</option>
+               </select>
              </div>
              <div className="space-y-2">
-               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Éducation</label>
-               <select className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl focus:border-orange-600 outline-none font-bold text-sm text-white" value={gameState.player.education} onChange={e => setGameState(p => ({ ...p, player: { ...p.player, education: e.target.value }}))}>
-                 <option>Baccalauréat</option>
-                 <option>BTS</option>
-                 <option>Master</option>
-               </select>
+               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Âge</label>
+               <input type="number" min="18" max="30" className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl focus:border-orange-600 outline-none font-bold text-white" value={gameState.player.age} onChange={e => setGameState(p => ({ ...p, player: { ...p.player, age: parseInt(e.target.value) }}))} />
              </div>
           </div>
           <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 py-5 rounded-3xl font-black uppercase tracking-widest transition-all shadow-xl shadow-orange-900/20 active:scale-95 text-white">
@@ -835,7 +964,12 @@ const App: React.FC = () => {
                             <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-blue-600 bg-blue-50 py-2 rounded-lg">Discuter</button>
                           )}
                           <button onClick={() => socialInteract(rel.id, 'gift')} className="text-[8px] font-black uppercase text-purple-600 bg-purple-50 py-2 rounded-lg">Offrir Cadeau</button>
-                          {rel.level > 40 && rel.type !== 'Enfant' && rel.type !== 'Famille' && (
+
+                          {rel.type !== 'Enfant' && (
+                             <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 py-2 rounded-lg col-span-2">Action Spéciale (IA)</button>
+                          )}
+
+                          {rel.level >= 40 && rel.type !== 'Enfant' && rel.type !== 'Famille' && rel.gender !== gameState.player.gender && (
                              <button onClick={() => socialInteract(rel.id, 'flirt')} className="text-[8px] font-black uppercase text-rose-600 bg-rose-50 py-2 rounded-lg">Draguer</button>
                           )}
                           {rel.level > 70 && rel.type === 'Amour' && !rel.livingTogether && (
@@ -863,7 +997,7 @@ const App: React.FC = () => {
                     <i className="fa-solid fa-bag-shopping text-fuchsia-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Mall</span>
                  </button>
-                 <button onClick={async () => { setLoading(true); const ev = await gemini.generateNarrative(gameState, 'activity', "Le joueur s'instruit sérieusement."); if(ev) { const choices = ev.choices.map((c:any) => ({...c, effect: {...c.effect, smarts: (c.effect.smarts || 0) + 5}})); setCurrentEvent({...ev, choices}); } setLoading(false); }} className="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100 active:scale-95 transition-all">
+                 <button onClick={() => setSelectedPropertyId('education')} className="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100 active:scale-95 transition-all">
                     <i className="fa-solid fa-graduation-cap text-blue-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Études</span>
                  </button>
@@ -1063,43 +1197,105 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Modal Achat Maison / Meubler */}
-                {selectedPropertyId && (
-                  <div className="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 overflow-y-auto max-h-[80vh]">
-                       <div className="flex justify-between items-center mb-6">
-                         <h4 className="text-sm font-black uppercase tracking-widest">{selectedPropertyId === 'new' ? 'Nouveau Logement' : 'Acheter des Meubles'}</h4>
-                         <button onClick={() => setSelectedPropertyId(null)}><i className="fa-solid fa-xmark text-slate-400"></i></button>
-                       </div>
+              </div>
+            )}
 
-                       {selectedPropertyId === 'new' ? (
-                         <div className="space-y-4">
-                           {NEIGHBORHOODS.map(n => (
-                             <div key={n.name} className="p-4 border-2 border-slate-100 rounded-2xl space-y-3">
-                                <p className="font-black text-slate-900">{n.name} <span className="text-[10px] text-orange-500">Prestige: {n.prestige}</span></p>
-                                <div className="grid grid-cols-2 gap-2">
-                                   <button onClick={() => { buyHouse(n, 'RENT'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-blue-50 text-blue-600 py-2 rounded-lg">LOUER ({n.rent.toLocaleString()}/m)</button>
-                                   <button onClick={() => { buyHouse(n, 'OWN'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-emerald-50 text-emerald-600 py-2 rounded-lg">ACHETER ({n.basePrice.toLocaleString()})</button>
+            {/* Modal Achat Maison / Meubler / Etudes */}
+            {selectedPropertyId && (
+              <div className="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white w-full max-w-sm rounded-3xl p-6 overflow-y-auto max-h-[80vh]">
+                   <div className="flex justify-between items-center mb-6">
+                     <h4 className="text-sm font-black uppercase tracking-widest">
+                       {selectedPropertyId === 'new' ? 'Nouveau Logement' :
+                        selectedPropertyId === 'education' ? 'Centre de Formation' :
+                        'Acheter des Meubles'}
+                     </h4>
+                     <button onClick={() => setSelectedPropertyId(null)}><i className="fa-solid fa-xmark text-slate-400"></i></button>
+                   </div>
+
+                   {selectedPropertyId === 'education' ? (
+                      <div className="space-y-6">
+                        {gameState.player.educationState.currentDegree ? (
+                          <div className="p-6 bg-blue-50 rounded-3xl text-center space-y-4">
+                            <p className="text-xs font-black text-blue-900 uppercase tracking-widest">Études en cours</p>
+                            <p className="text-xl font-black text-blue-600">{gameState.player.educationState.currentDegree} en {gameState.player.educationState.specialty}</p>
+                            <div className="w-full bg-blue-200 h-2 rounded-full">
+                               <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${(gameState.player.educationState.monthsCompleted / 6) * 100}%` }}></div>
+                            </div>
+                            <p className="text-[10px] font-bold text-blue-400 uppercase">{gameState.player.educationState.monthsCompleted} / 6 MOIS COMPLÉTÉS</p>
+                            <button onClick={() => { studyAction(); setSelectedPropertyId(null); }} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase active:scale-95 transition-all">Étudier (1 mois)</button>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-400 uppercase">S'inscrire à un diplôme</p>
+                            {[
+                              { level: 'Licence', price: 200000 },
+                              { level: 'Master', price: 500000 },
+                              { level: 'Doctorat', price: 1000000 }
+                            ].map(d => (
+                              <div key={d.level} className="p-4 border-2 border-slate-100 rounded-2xl space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <p className="font-black text-slate-900">{d.level}</p>
+                                  <p className="text-xs font-black text-emerald-600">{d.price.toLocaleString()} FCFA</p>
                                 </div>
-                             </div>
-                           ))}
+                                <select
+                                  className="w-full bg-slate-100 border-none p-2 rounded-lg text-[10px] font-black uppercase"
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      enrollDegree(d.level as any, e.target.value);
+                                      setSelectedPropertyId(null);
+                                    }
+                                  }}
+                                  defaultValue=""
+                                >
+                                  <option value="" disabled>Choisir Spécialité</option>
+                                  <option value="Informatique">Informatique</option>
+                                  <option value="Droit">Droit</option>
+                                  <option value="Ressources Humaines">Ressources Humaines</option>
+                                  <option value="Comptabilité">Comptabilité</option>
+                                  <option value="Gestion Commerciale">Gestion Commerciale</option>
+                                  <option value="Marketing">Marketing</option>
+                                  <option value="Communication">Communication</option>
+                                </select>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="space-y-2 pt-4 border-t border-slate-100">
+                           <p className="text-[10px] font-black text-slate-400 uppercase">Tes Diplômes</p>
+                           <div className="flex flex-wrap gap-2">
+                              {gameState.player.educationState.degreesObtained.map(deg => (
+                                <span key={deg} className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black uppercase">{deg}</span>
+                              ))}
+                           </div>
+                        </div>
+                      </div>
+                   ) : selectedPropertyId === 'new' ? (
+                     <div className="space-y-4">
+                       {NEIGHBORHOODS.map(n => (
+                         <div key={n.name} className="p-4 border-2 border-slate-100 rounded-2xl space-y-3">
+                            <p className="font-black text-slate-900">{n.name} <span className="text-[10px] text-orange-500">Prestige: {n.prestige}</span></p>
+                            <div className="grid grid-cols-2 gap-2">
+                               <button onClick={() => { buyHouse(n, 'RENT'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-blue-50 text-blue-600 py-2 rounded-lg">LOUER ({n.rent.toLocaleString()}/m)</button>
+                               <button onClick={() => { buyHouse(n, 'OWN'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-emerald-50 text-emerald-600 py-2 rounded-lg">ACHETER ({n.basePrice.toLocaleString()})</button>
+                            </div>
                          </div>
-                       ) : (
-                         <div className="space-y-3">
-                           {FURNITURE_ITEMS.map(f => (
-                             <button key={f.id} onClick={() => buyFurniture(f, selectedPropertyId)} className="w-full flex justify-between items-center p-4 border-2 border-slate-100 rounded-2xl">
-                                <div className="text-left">
-                                  <p className="text-sm font-bold">{f.name}</p>
-                                  <p className="text-[8px] text-emerald-600 font-black uppercase">Santé +{f.healthBonus} | Bonheur +{f.happinessBonus}</p>
-                                </div>
-                                <p className="text-xs font-black text-emerald-600">{f.price.toLocaleString()} FCFA</p>
-                             </button>
-                           ))}
-                         </div>
-                       )}
-                    </div>
-                  </div>
-                )}
+                       ))}
+                     </div>
+                   ) : (
+                     <div className="space-y-3">
+                       {FURNITURE_ITEMS.map(f => (
+                         <button key={f.id} onClick={() => buyFurniture(f, selectedPropertyId)} className="w-full flex justify-between items-center p-4 border-2 border-slate-100 rounded-2xl">
+                            <div className="text-left">
+                              <p className="text-sm font-bold">{f.name}</p>
+                              <p className="text-[8px] text-emerald-600 font-black uppercase">Santé +{f.healthBonus} | Bonheur +{f.happinessBonus}</p>
+                            </div>
+                            <p className="text-xs font-black text-emerald-600">{f.price.toLocaleString()} FCFA</p>
+                         </button>
+                       ))}
+                     </div>
+                   )}
+                </div>
               </div>
             )}
           </div>

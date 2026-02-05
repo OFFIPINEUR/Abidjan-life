@@ -22,6 +22,8 @@ export interface Job {
   stressLevel: number;
   requirement: number; // Smarts needed
   workingHours: string; // Heures de travail
+  requiredDegree?: 'Licence' | 'Master' | 'Doctorat';
+  requiredSpecialty?: string;
 }
 
 export interface Loan {
@@ -65,6 +67,7 @@ export interface Relationship {
   name: string;
   type: 'Famille' | 'Ami' | 'Amour' | 'Collègue' | 'Conjoint' | 'Enfant';
   level: number;
+  gender: 'Homme' | 'Femme';
   isPartner?: boolean;
   isSpouse?: boolean;
   livingTogether?: boolean;
@@ -93,11 +96,19 @@ export interface InventoryItem {
   value: number;
 }
 
+export interface EducationState {
+  currentDegree: 'Licence' | 'Master' | 'Doctorat' | null;
+  specialty: string | null;
+  monthsCompleted: number;
+  degreesObtained: string[];
+}
+
 export interface GameState {
   isRegistered: boolean;
   timer: number;
   player: {
     name: string;
+    gender: 'Homme' | 'Femme';
     age: number;
     month: number;
     job: Job | null;
@@ -110,6 +121,7 @@ export interface GameState {
     loans: Loan[]; // Suivi des emprunts
     logs: LogEntry[];
     education: string;
+    educationState: EducationState;
     inventory: InventoryItem[];
     businesses: Business[];
   };
