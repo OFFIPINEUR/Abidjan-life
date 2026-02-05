@@ -66,12 +66,13 @@ export interface Vehicle {
 export interface Relationship {
   id: string;
   name: string;
-  type: 'Famille' | 'Ami' | 'Amour' | 'Collègue' | 'Conjoint' | 'Enfant';
+  type: 'Famille' | 'Ami' | 'Amour' | 'Collègue' | 'Conjoint' | 'Enfant' | 'Petit(e) ami(e)' | 'Amant' | 'Maîtresse' | 'Ex-Conjoint' | 'Ex-Partenaire';
   level: number;
   gender: 'Homme' | 'Femme';
   isPartner?: boolean;
   isSpouse?: boolean;
   livingTogether?: boolean;
+  childSupport?: number;
 }
 
 export interface LogEntry {
