@@ -67,6 +67,7 @@ export interface LogEntry {
 
 export interface GameState {
   isRegistered: boolean;
+  timer: number;
   player: {
     name: string;
     age: number;

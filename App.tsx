@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [gameState, setGameState] = useState<GameState>({
     isRegistered: false,
+    timer: 180,
     player: {
       name: "",
       age: 18,
@@ -75,6 +76,44 @@ const App: React.FC = () => {
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [gameState.player.logs]);
+
+  useEffect(() => {
+    if (!gameState.isRegistered || showSplash) return;
+
+    const interval = setInterval(() => {
+      setGameState(prev => ({
+        ...prev,
+        timer: Math.max(0, prev.timer - 1)
+      }));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameState.isRegistered, showSplash]);
+
+  useEffect(() => {
+    if (loading || currentEvent) return;
+
+    if (gameState.timer === 120 || gameState.timer === 60) {
+      triggerRandomChallenge();
+    } else if (gameState.timer === 0) {
+      setGameState(prev => ({ ...prev, timer: 180 }));
+      handleNextStep();
+    }
+  }, [gameState.timer, loading, currentEvent]);
+
+  const triggerRandomChallenge = async () => {
+    if (currentEvent || loading) return;
+    setLoading(true);
+
+    const type = (gameState.player.job && Math.random() > 0.5) ? 'job_challenge' : 'random_event';
+    const extra = type === 'job_challenge'
+      ? `Challenge imprévu au poste de ${gameState.player.job?.title}. Un problème à régler immédiatement.`
+      : "Événement imprévu dans les rues d'Abidjan (ex: renverser une table au maquis par accident, rencontre inattendue, petit problème de transport, une galère nouchi).";
+
+    const event = await gemini.generateNarrative(gameState, type as any, extra);
+    if (event) setCurrentEvent(event);
+    setLoading(false);
+  };
 
   const addLog = (text: string, type: LogEntry['type'] = 'neutral') => {
     setGameState(prev => ({
@@ -312,6 +351,12 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 font-sans max-w-md mx-auto overflow-hidden shadow-2xl relative">
+      <div className="h-1.5 w-full bg-slate-900 overflow-hidden shrink-0 z-50">
+        <div
+          className="h-full bg-gradient-to-r from-orange-600 to-yellow-400 transition-all duration-1000 ease-linear"
+          style={{ width: `${(gameState.timer / 180) * 100}%` }}
+        />
+      </div>
       <header className="bg-slate-950 p-6 shadow-2xl z-30 border-b border-slate-800 shrink-0">
         <div className="flex justify-between items-start mb-6">
           <div className="space-y-1">
@@ -399,10 +444,16 @@ const App: React.FC = () => {
         ) : (
           <div className="h-full">
             {activeTab === 'vie' && (
-              <button onClick={handleNextStep} className="w-full h-full bg-orange-600 hover:bg-orange-700 text-white rounded-3xl shadow-xl shadow-orange-600/20 flex flex-col items-center justify-center gap-2 p-6 transition-all active:scale-95 group">
+              <button
+                onClick={() => {
+                  handleNextStep();
+                  setGameState(prev => ({ ...prev, timer: 180 }));
+                }}
+                className="w-full h-full bg-orange-600 hover:bg-orange-700 text-white rounded-3xl shadow-xl shadow-orange-600/20 flex flex-col items-center justify-center gap-2 p-6 transition-all active:scale-95 group"
+              >
                 <i className={`fa-solid ${gameState.player.job ? 'fa-briefcase' : 'fa-play'} text-3xl group-hover:scale-110 transition-transform`}></i>
                 <div className="text-center">
-                  <span className="block text-xs font-black uppercase tracking-widest opacity-80">Cycle Mensuel</span>
+                  <span className="block text-xs font-black uppercase tracking-widest opacity-80">Cycle Mensuel ({Math.floor(gameState.timer / 60)}:{(gameState.timer % 60).toString().padStart(2, '0')})</span>
                   <span className="block text-2xl font-black italic">{gameState.player.job ? "TRAVAILLER (1 MOIS)" : "VIVRE LE MOIS"}</span>
                 </div>
               </button>
