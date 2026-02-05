@@ -21,7 +21,7 @@ export class GeminiService {
 
   async generateNarrative(
     state: GameState, 
-    type: 'yearly' | 'interview' | 'social' | 'legal' | 'activity' | 'job_challenge' | 'debt_event' | 'social_npc' | 'shopping' | 'random_event' | 'dating' | 'marriage' | 'business_event' | 'child_event' | 'family_interaction',
+    type: 'yearly' | 'interview' | 'social' | 'legal' | 'activity' | 'job_challenge' | 'debt_event' | 'social_npc' | 'shopping' | 'random_event' | 'dating' | 'marriage' | 'business_event' | 'child_event' | 'family_interaction' | 'breakup' | 'become_partner',
     extra?: string
   ) {
     // Calcul des dettes pour le contexte de l'IA
@@ -55,10 +55,13 @@ export class GeminiService {
       5. Si 'interview': Simule une question cruciale liée au poste de ${state.player.job?.title || 'le poste visé'}. Un choix doit avoir actionType: 'HIRE', les autres 'FAIL'.
       6. Si 'dating' ou 'social': Si c'est pour draguer, adapte selon le genre du joueur (${state.player.gender}) et de l'interlocuteur. Propose des choix pour séduire ou renforcer le lien.
       7. Si 'marriage': Organisation du mariage ou demande. Coûts élevés (dot).
-      8. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
-      9. Si 'child_event': Événement lié aux enfants (école, maladie, joie).
-      10. Si 'random_event': Incident de la vie quotidienne à Babi.
-      11. Retourne UNIQUEMENT du JSON.
+      8. Si 'become_partner': Demande pour devenir petit(e) ami(e).
+      9. Si 'breakup': Séparation ou divorce. Raisons variées (tromperie, manque d'argent, routine, famille). Doit inclure une conséquence sur la pension alimentaire si nécessaire.
+      10. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
+      11. Si 'child_event': Événement lié aux enfants (école, maladie, joie, enfant hors mariage).
+      12. Si 'random_event': Incident de la vie quotidienne à Babi.
+      13. Gère les relations secrètes (maîtresse/amant) : si le joueur est marié, une nouvelle relation amoureuse peut devenir une "maîtresse" ou un "amant". L'IA doit créer des défis autour de ce secret.
+      14. Retourne UNIQUEMENT du JSON.
     `;
 
     try {

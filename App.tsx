@@ -203,6 +203,19 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
+  const findNewFriend = async () => {
+    setLoading(true);
+    const event = await gemini.generateNarrative(gameState, 'social', `Le joueur cherche à se faire un nouvel ami garçon (frangin) pour le foot ou le maquis. Genre du joueur: ${gameState.player.gender}.`);
+    if (event) {
+      event.choices = event.choices.map((c: any) => ({
+        ...c,
+        actionType: 'NEW_FRIEND'
+      }));
+      setCurrentEvent(event);
+    }
+    setLoading(false);
+  };
+
   const triggerRandomChallenge = async () => {
     if (currentEvent || loading) return;
     setLoading(true);
@@ -349,7 +362,7 @@ const App: React.FC = () => {
     addLog(`🛒 ACHAT : ${item.name} ajouté à ton inventaire.`, "positive");
   };
 
-  const socialInteract = async (relId: string, action: 'chat' | 'flirt' | 'gift' | 'marry' | 'cohabit' | 'child') => {
+  const socialInteract = async (relId: string, action: 'chat' | 'flirt' | 'gift' | 'marry' | 'cohabit' | 'child' | 'become_partner' | 'separate') => {
     const relation = gameState.player.relations.find(r => r.id === relId);
     if (!relation) return;
 
@@ -375,7 +388,12 @@ const App: React.FC = () => {
       }));
     }
 
-    const event = await gemini.generateNarrative(gameState, action === 'flirt' || action === 'marry' ? 'dating' : 'social', extra);
+    const event = await gemini.generateNarrative(gameState,
+      action === 'become_partner' ? 'become_partner' :
+      action === 'separate' ? 'breakup' :
+      action === 'flirt' || action === 'marry' ? 'dating' : 'social',
+      extra
+    );
     if (event) {
       // Add specialized choices for marriage/cohabit
       if (action === 'marry') {
@@ -394,6 +412,18 @@ const App: React.FC = () => {
          event.choices = event.choices.map((c: any) => ({
           ...c,
           actionType: c.text.toLowerCase().includes('oui') ? 'CHILD' : 'FAIL',
+          partnerId: relId
+        }));
+      } else if (action === 'become_partner') {
+        event.choices = event.choices.map((c: any) => ({
+          ...c,
+          actionType: c.text.toLowerCase().includes('oui') ? 'BECOME_PARTNER' : 'FAIL',
+          partnerId: relId
+        }));
+      } else if (action === 'separate') {
+        event.choices = event.choices.map((c: any) => ({
+          ...c,
+          actionType: 'SEPARATE',
           partnerId: relId
         }));
       }
@@ -463,6 +493,7 @@ const App: React.FC = () => {
     
     const businessIncome = gameState.player.businesses.reduce((acc, b) => acc + b.monthlyRevenue, 0);
     const childrenCount = gameState.player.relations.filter(r => r.type === 'Enfant').length;
+    const totalChildSupport = gameState.player.relations.reduce((acc, r) => acc + (r.childSupport || 0), 0);
     const childExpenses = childrenCount * 30000;
     const livingWithPartner = gameState.player.relations.some(r => r.livingTogether);
     const rentExpenses = gameState.player.assets.properties.filter(p => p.type === 'RENT').reduce((acc, p) => acc + p.monthlyCost, 0);
@@ -494,7 +525,7 @@ const App: React.FC = () => {
         remainingAmount: l.remainingAmount - l.monthlyPayment
       })).filter(l => l.monthsRemaining > 0);
 
-      const netIncome = monthlySalary + businessIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses;
+      const netIncome = monthlySalary + businessIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport;
 
       // Bonus santé/bonheur des meubles
       const healthBonus = prev.player.assets.properties.reduce((acc, p) => acc + p.furnishings.reduce((fAcc, f) => fAcc + f.healthBonus, 0), 0) / 10;
@@ -562,6 +593,10 @@ const App: React.FC = () => {
 
     if (finalRentExpenses > 0) {
       addLog(`🏠 LOGEMENT : -${Math.round(finalRentExpenses).toLocaleString()} FCFA de loyer/charges.`, 'negative');
+    }
+
+    if (totalChildSupport > 0) {
+      addLog(`🍼 PENSION : -${totalChildSupport.toLocaleString()} FCFA de pension alimentaire.`, 'negative');
     }
 
     if (event) setCurrentEvent(event);
@@ -689,6 +724,50 @@ const App: React.FC = () => {
         gender: Math.random() > 0.5 ? 'Homme' : 'Femme'
       };
       setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [...prev.player.relations, newRel] }}));
+    } else if (choice.actionType === 'NEW_FRIEND') {
+      const newRel: Relationship = {
+        id: Date.now().toString(),
+        name: choice.resultLog.split(' ')[0] || "Nouveau Frangin",
+        type: 'Ami',
+        level: 25,
+        gender: 'Homme'
+      };
+      setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [...prev.player.relations, newRel] }}));
+    } else if (choice.actionType === 'BECOME_PARTNER' && choice.partnerId) {
+      const hasSpouse = gameState.player.relations.some(r => r.isSpouse);
+      const relType = hasSpouse ? (gameState.player.gender === 'Homme' ? 'Maîtresse' : 'Amant') : 'Petit(e) ami(e)';
+
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          relations: prev.player.relations.map(r => r.id === choice.partnerId ? { ...r, type: relType, isPartner: true } : r)
+        }
+      }));
+      addLog(`💕 RELATION : ${relType === 'Petit(e) ami(e)' ? 'Tu es maintenant en couple !' : 'C\'est devenu ta ' + relType + '.'}`, 'positive');
+    } else if (choice.actionType === 'SEPARATE' && choice.partnerId) {
+      const relation = gameState.player.relations.find(r => r.id === choice.partnerId);
+      if (relation) {
+        const isSpouse = relation.isSpouse;
+        setGameState(prev => {
+          const children = prev.player.relations.filter(r => r.type === 'Enfant');
+          let alimony = 0;
+          if (children.length > 0 && (relation.isSpouse || relation.livingTogether)) {
+            // L'IA décide mais on met une base
+            alimony = Math.min(prev.player.stats.money * 0.1, 100000);
+          }
+          return {
+            ...prev,
+            player: {
+              ...prev.player,
+              relations: prev.player.relations.map(r =>
+                r.id === choice.partnerId ? { ...r, type: isSpouse ? 'Ex-Conjoint' : 'Ex-Partenaire', isSpouse: false, isPartner: false, livingTogether: false, childSupport: alimony } : r
+              )
+            }
+          };
+        });
+        addLog(`💔 RUPTURE : Tu t'es séparé de ${relation.name}.`, 'negative');
+      }
     } else if (choice.actionType === 'MARRY' && choice.partnerId) {
       setGameState(prev => ({
         ...prev,
@@ -708,7 +787,10 @@ const App: React.FC = () => {
       }));
       addLog(`🏠 COHABITATION : Vous vivez maintenant ensemble !`, 'positive');
     } else if (choice.actionType === 'CHILD' && choice.partnerId) {
-      const childName = "Petit(e) " + gameState.player.name.split(' ')[0];
+      const partner = gameState.player.relations.find(r => r.id === choice.partnerId);
+      const isHorsMariage = partner && !partner.livingTogether && !partner.isSpouse;
+
+      const childName = "Petit(e) " + (partner ? partner.name.split(' ')[0] : gameState.player.name.split(' ')[0]);
       const newChild: Relationship = {
         id: Date.now().toString(),
         name: childName,
@@ -716,14 +798,27 @@ const App: React.FC = () => {
         level: 100,
         gender: Math.random() > 0.5 ? 'Homme' : 'Femme'
       };
-      setGameState(prev => ({
-        ...prev,
-        player: {
-          ...prev.player,
-          relations: [...prev.player.relations, newChild]
+
+      setGameState(prev => {
+        const newRelations = [...prev.player.relations, newChild];
+        if (isHorsMariage) {
+          return {
+            ...prev,
+            player: {
+              ...prev.player,
+              relations: newRelations.map(r => r.id === choice.partnerId ? { ...r, childSupport: (r.childSupport || 0) + 40000 } : r)
+            }
+          };
         }
-      }));
-      addLog(`👶 NAISSANCE : Bienvenue à ${childName} dans la famille !`, 'positive');
+        return {
+          ...prev,
+          player: {
+            ...prev.player,
+            relations: newRelations
+          }
+        };
+      });
+      addLog(`👶 NAISSANCE : Bienvenue à ${childName} ! ${isHorsMariage ? '(Enfant hors mariage - Pension à payer)' : ''}`, 'positive');
     } else if (choice.actionType === 'HOSPITAL_STAY') {
       setGameState(prev => ({
         ...prev,
@@ -1025,7 +1120,10 @@ const App: React.FC = () => {
                <div className="space-y-4 overflow-y-auto max-h-[400px] pr-1 pb-20">
                   <div className="flex justify-between items-center">
                     <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Tes Relations</h3>
-                    <button onClick={findNewRelation} className="text-[8px] font-black bg-orange-600 text-white px-3 py-1.5 rounded-full uppercase">Faire une rencontre</button>
+                    <div className="flex gap-2">
+                      <button onClick={findNewFriend} className="text-[8px] font-black bg-blue-600 text-white px-3 py-1.5 rounded-full uppercase">Frangin</button>
+                      <button onClick={findNewRelation} className="text-[8px] font-black bg-orange-600 text-white px-3 py-1.5 rounded-full uppercase">Love</button>
+                    </div>
                   </div>
                   {gameState.player.relations.map(rel => (
                     <div key={rel.id} className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex flex-col gap-3">
@@ -1058,17 +1156,27 @@ const App: React.FC = () => {
                              <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 py-2 rounded-lg col-span-2">Action Spéciale (IA)</button>
                           )}
 
-                          {rel.level >= 40 && rel.type !== 'Enfant' && rel.type !== 'Famille' && rel.gender !== gameState.player.gender && (
+                          {rel.level >= 40 && !['Enfant', 'Famille', 'Conjoint', 'Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
                              <button onClick={() => socialInteract(rel.id, 'flirt')} className="text-[8px] font-black uppercase text-rose-600 bg-rose-50 py-2 rounded-lg">Draguer</button>
                           )}
-                          {rel.level > 70 && rel.type === 'Amour' && !rel.livingTogether && (
+                          {rel.level >= 60 && ['Ami', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
+                             <button onClick={() => socialInteract(rel.id, 'become_partner')} className="text-[8px] font-black uppercase text-pink-600 bg-pink-50 py-2 rounded-lg">
+                               Demander {rel.gender === 'Femme' ? 'Petite Amie' : 'Petit Ami'}
+                             </button>
+                          )}
+                          {rel.level > 70 && ['Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && !rel.livingTogether && (
                              <button onClick={() => socialInteract(rel.id, 'cohabit')} className="text-[8px] font-black uppercase text-amber-600 bg-amber-50 py-2 rounded-lg">Vivre ensemble</button>
                           )}
-                          {rel.level > 85 && (rel.type === 'Amour' || rel.type === 'Conjoint') && !rel.isSpouse && (
+                          {rel.level > 85 && ['Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && !rel.isSpouse && (
                              <button onClick={() => socialInteract(rel.id, 'marry')} className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 py-2 rounded-lg">Mariage</button>
                           )}
-                          {(rel.isSpouse || rel.livingTogether) && rel.type !== 'Enfant' && (
-                             <button onClick={() => socialInteract(rel.id, 'child')} className="text-[8px] font-black uppercase text-sky-600 bg-sky-50 py-2 rounded-lg">Avoir Enfant</button>
+                          {(rel.isSpouse || rel.livingTogether || rel.type === 'Maîtresse' || rel.type === 'Amant') && rel.type !== 'Enfant' && (
+                             <button onClick={() => socialInteract(rel.id, 'child')} className="text-[8px] font-black uppercase text-sky-600 bg-sky-50 py-2 rounded-lg">Faire un Enfant</button>
+                          )}
+                          {['Petit(e) ami(e)', 'Conjoint', 'Maîtresse', 'Amant'].includes(rel.type) && (
+                             <button onClick={() => socialInteract(rel.id, 'separate')} className="text-[8px] font-black uppercase text-slate-600 bg-slate-100 py-2 rounded-lg col-span-2">
+                               {rel.type === 'Conjoint' ? 'Divorcer' : 'Se Séparer'}
+                             </button>
                           )}
                        </div>
                     </div>
