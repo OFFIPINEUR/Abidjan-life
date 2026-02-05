@@ -83,12 +83,25 @@ export interface LogEntry {
   type: 'positive' | 'negative' | 'neutral' | 'event';
 }
 
+export type BusinessType = 'Gbaka' | 'Boutique' | 'Maquis' | 'Transport' | 'Kbine' | 'Kiosque' | 'Lavage Auto' | 'Pressing' | 'Garbadrome';
+
 export interface Business {
   id: string;
   name: string;
-  type: 'Gbaka' | 'Boutique' | 'Maquis' | 'Transport';
+  type: BusinessType;
+  location: string;
   investment: number;
   monthlyRevenue: number;
+  level: number;
+}
+
+export interface Investment {
+  id: string;
+  name: string;
+  type: 'SAVINGS' | 'STOCK' | 'REAL_ESTATE';
+  initialAmount: number;
+  currentValue: number;
+  monthlyYield: number; // Yield rate or fixed return
 }
 
 export interface InventoryItem {
@@ -126,5 +139,7 @@ export interface GameState {
     educationState: EducationState;
     inventory: InventoryItem[];
     businesses: Business[];
+    investments: Investment[];
   };
+  marketBusinesses: Business[];
 }

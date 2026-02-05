@@ -30,7 +30,8 @@ export class GeminiService {
     const hasPhone = state.player.inventory.some(item => item.type === 'Phone');
     const spouse = state.player.relations.find(r => r.isSpouse);
     const children = state.player.relations.filter(r => r.type === 'Enfant');
-    const businesses = state.player.businesses.map(b => b.name).join(', ');
+    const businesses = state.player.businesses.map(b => `${b.name} (${b.type} à ${b.location}, Niv.${b.level})`).join(', ');
+    const investments = state.player.investments.map(inv => `${inv.name} (${inv.currentValue} FCFA)`).join(', ');
     const edu = state.player.educationState;
     const currentEduContext = edu.currentDegree ? `Étudie actuellement en ${edu.currentDegree} (${edu.specialty}), Mois ${edu.monthsCompleted + 1}/6.` : `Diplôme le plus élevé: ${state.player.education}.`;
 
@@ -43,6 +44,7 @@ export class GeminiService {
       Famille: ${spouse ? 'Marié(e) à ' + spouse.name : 'Célibataire'}, ${children.length} enfant(s).
       Patrimoine: ${state.player.assets.properties.length} maison(s), ${state.player.assets.vehicles.length} véhicule(s).
       Business: ${businesses || 'Aucun'}.
+      Placements: ${investments || 'Aucun'}.
       Dette Totale: ${totalDebt} FCFA. Remboursement mensuel: ${monthlyDebtPayment} FCFA.
       Téléphone: ${hasPhone ? 'Possède un smartphone' : 'Pas de téléphone'}.
       Type d'événement: ${type}. ${extra || ''}
