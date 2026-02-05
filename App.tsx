@@ -888,7 +888,7 @@ const App: React.FC = () => {
 
   if (showSplash) {
     return (
-      <div className="h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-white max-w-md mx-auto relative overflow-hidden">
+      <div className="h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-white w-full sm:max-w-md sm:mx-auto relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
         <div className="flex flex-col items-center animate-in zoom-in duration-1000">
           <div className="w-24 h-24 bg-gradient-to-tr from-orange-600 to-yellow-400 rounded-[2rem] flex items-center justify-center shadow-2xl mb-8 -rotate-6 border-4 border-white/20">
@@ -912,7 +912,7 @@ const App: React.FC = () => {
 
   if (showRegister) {
     return (
-      <div className="h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-white max-w-md mx-auto">
+      <div className="h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-white w-full sm:max-w-md sm:mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black uppercase tracking-tighter text-orange-500">Nouvelle Vie</h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Bienvenue au Pays des Éléphants</p>
@@ -944,7 +944,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 font-sans max-w-md mx-auto overflow-hidden shadow-2xl relative">
+    <div className="flex flex-col h-screen bg-slate-50 font-sans w-full sm:max-w-md sm:mx-auto overflow-hidden shadow-2xl relative safe-top">
       <div className="h-1.5 w-full bg-slate-900 overflow-hidden shrink-0 z-50">
         <div
           className="h-full bg-gradient-to-r from-orange-600 to-yellow-400 transition-all duration-1000 ease-linear"
@@ -960,19 +960,19 @@ const App: React.FC = () => {
             <i className="fa-solid fa-mobile-screen-button"></i>
           </button>
         )}
-        <div className="flex justify-between items-start mb-6">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-white leading-none uppercase tracking-tighter">{gameState.player.name}</h2>
-            <div className="flex items-center gap-2">
-              <span className="bg-orange-600 text-[9px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider">{gameState.player.age} ANS</span>
-              <span className="bg-blue-600 text-[9px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider">{MONTHS[gameState.player.month].toUpperCase()}</span>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate max-w-[150px]">
-                {gameState.player.job ? `${gameState.player.job.title} @ ${gameState.player.job.company.name}` : "Sans emploi stable"}
+        <div className="flex justify-between items-start mb-6 gap-4">
+          <div className="space-y-1 overflow-hidden">
+            <h2 className="text-xl md:text-2xl font-black text-white leading-none uppercase tracking-tighter truncate">{gameState.player.name}</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-orange-600 text-[9px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider shrink-0">{gameState.player.age} ANS</span>
+              <span className="bg-blue-600 text-[9px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider shrink-0">{MONTHS[gameState.player.month].toUpperCase()}</span>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate max-w-[120px]">
+                {gameState.player.job ? `${gameState.player.job.title} @ ${gameState.player.job.company.name}` : "Sans emploi"}
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-2xl font-black text-emerald-500 leading-none">{gameState.player.stats.money.toLocaleString()} <small className="text-[10px]">FCFA</small></p>
+          <div className="text-right shrink-0">
+            <p className="text-xl md:text-2xl font-black text-emerald-500 leading-none">{gameState.player.stats.money.toLocaleString()} <small className="text-[10px]">FCFA</small></p>
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">Solde Actuel</p>
           </div>
         </div>
@@ -1037,7 +1037,7 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white border-t-2 border-slate-100 p-4 min-h-[180px] shadow-[0_-10px_30px_rgba(0,0,0,0.03)] shrink-0">
+      <div className="bg-white border-t-2 border-slate-100 p-4 min-h-[160px] shadow-[0_-10px_30px_rgba(0,0,0,0.03)] shrink-0">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full gap-3">
             <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -1046,13 +1046,13 @@ const App: React.FC = () => {
         ) : (
           <div className="h-full">
             {activeTab === 'vie' && (
-              <div className="flex flex-col gap-3 h-full">
+              <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2">
                 <button
                   onClick={() => {
                     handleNextStep();
                     setGameState(prev => ({ ...prev, timer: 180 }));
                   }}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white rounded-3xl shadow-xl shadow-orange-600/20 flex flex-col items-center justify-center gap-2 p-4 transition-all active:scale-95 group"
+                  className="flex-none w-[75%] bg-orange-600 hover:bg-orange-700 text-white rounded-3xl shadow-xl shadow-orange-600/20 flex flex-col items-center justify-center gap-2 p-4 transition-all active:scale-95 group"
                 >
                   <i className={`fa-solid ${gameState.player.job ? 'fa-briefcase' : 'fa-play'} text-2xl group-hover:scale-110 transition-transform`}></i>
                   <div className="text-center">
@@ -1062,9 +1062,10 @@ const App: React.FC = () => {
                 </button>
                 <button
                   onClick={sleepAction}
-                  className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  className="flex-none w-[50%] bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex flex-col items-center justify-center gap-2 active:scale-95 transition-all"
                 >
-                  <i className="fa-solid fa-bed"></i> Dormir (Réduit Stress)
+                  <i className="fa-solid fa-bed text-2xl"></i>
+                  <span>Dormir (Réduit Stress)</span>
                 </button>
               </div>
             )}
@@ -1077,9 +1078,9 @@ const App: React.FC = () => {
                      <button onClick={quitJob} className="text-[9px] font-black text-rose-500 uppercase border border-rose-200 px-3 py-1 rounded-lg hover:bg-rose-50 transition-all active:scale-90">Démissionner</button>
                    )}
                 </div>
-                <div className="flex-1 overflow-y-auto pr-1 space-y-6">
+                <div className="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-6">
                   {gameState.player.job ? (
-                    <div className="p-8 bg-emerald-50 border-2 border-emerald-100 rounded-[2.5rem] flex flex-col items-center text-center shadow-inner">
+                    <div className="p-8 bg-emerald-50 border-2 border-emerald-100 rounded-[2.5rem] flex flex-col items-center text-center shadow-inner mx-1">
                        <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-4">
                         <i className="fa-solid fa-briefcase text-emerald-500 text-3xl"></i>
                        </div>
@@ -1092,18 +1093,18 @@ const App: React.FC = () => {
                     Array.from(new Set(JOBS.map(j => j.category))).map(cat => (
                       <div key={cat} className="space-y-3">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-2 border-orange-500 pl-2 ml-1">{cat}</h4>
-                        <div className="grid grid-cols-1 gap-2">
+                        <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2 px-1">
                           {JOBS.filter(j => j.category === cat).map((j, i) => (
-                            <button key={i} onClick={() => applyForJob(j)} className="flex items-center justify-between p-4 bg-white rounded-2xl border-2 transition-all text-left border-slate-100 hover:border-blue-500 active:scale-95 group shadow-sm">
-                               <div className="flex flex-col">
+                            <button key={i} onClick={() => applyForJob(j)} className="flex-none w-[260px] flex flex-col justify-between p-4 bg-white rounded-2xl border-2 transition-all text-left border-slate-100 hover:border-blue-500 active:scale-95 group shadow-sm">
+                               <div className="flex flex-col mb-4">
                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight group-hover:text-blue-600 transition-colors">{j.company.name}</p>
-                                 <p className="text-sm font-black text-slate-900">{j.title}</p>
-                                 <div className="flex gap-2 mt-1">
+                                 <p className="text-sm font-black text-slate-900 leading-tight">{j.title}</p>
+                                 <div className="flex gap-2 mt-2">
                                     {j.requiredDegree && <span className="text-[8px] font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{j.requiredDegree}</span>}
                                     {j.requiredSpecialty && <span className="text-[8px] font-bold bg-blue-50 px-1.5 py-0.5 rounded text-blue-500">{j.requiredSpecialty}</span>}
                                  </div>
                                </div>
-                               <div className="text-right flex flex-col items-end">
+                               <div className="border-t border-slate-50 pt-3">
                                  <p className="text-xs font-black text-emerald-600">{j.salary.toLocaleString()} <small>FCFA</small></p>
                                </div>
                             </button>
@@ -1117,84 +1118,86 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'social' && (
-               <div className="space-y-4 overflow-y-auto max-h-[400px] pr-1 pb-20">
-                  <div className="flex justify-between items-center">
+               <div className="space-y-4 pb-10">
+                  <div className="flex justify-between items-center px-1">
                     <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Tes Relations</h3>
                     <div className="flex gap-2">
                       <button onClick={findNewFriend} className="text-[8px] font-black bg-blue-600 text-white px-3 py-1.5 rounded-full uppercase">Frangin</button>
                       <button onClick={findNewRelation} className="text-[8px] font-black bg-orange-600 text-white px-3 py-1.5 rounded-full uppercase">Love</button>
                     </div>
                   </div>
-                  {gameState.player.relations.map(rel => (
-                    <div key={rel.id} className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex flex-col gap-3">
-                       <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 font-black uppercase">{rel.name[0]}</div>
-                             <div>
-                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{rel.type} {rel.livingTogether ? '🏠' : ''}</p>
-                               <p className="text-sm font-black text-slate-900">{rel.name}</p>
-                             </div>
-                          </div>
-                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                             <div className="h-full bg-pink-500" style={{ width: `${rel.level}%` }} />
-                          </div>
-                       </div>
-                       
-                       <div className="grid grid-cols-2 gap-2">
-                          {rel.name === 'Vieux Père Koffi' ? (
-                            <>
-                              <button onClick={() => interactWithKoffi('conseil')} className="text-[8px] font-black uppercase text-blue-600 bg-blue-50 py-2 rounded-lg">Conseil</button>
-                              <button onClick={() => interactWithKoffi('biere')} className="text-[8px] font-black uppercase text-amber-600 bg-amber-50 py-2 rounded-lg">Payer Bière</button>
-                              <button onClick={() => interactWithKoffi('business')} className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 py-2 rounded-lg">Parler Biz</button>
-                            </>
-                          ) : (
-                            <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-blue-600 bg-blue-50 py-2 rounded-lg">Discuter</button>
-                          )}
-                          <button onClick={() => socialInteract(rel.id, 'gift')} className="text-[8px] font-black uppercase text-purple-600 bg-purple-50 py-2 rounded-lg">Offrir Cadeau</button>
+                  <div className="flex flex-row gap-4 overflow-x-auto no-scrollbar pb-4 px-1">
+                    {gameState.player.relations.map(rel => (
+                      <div key={rel.id} className="flex-none w-[280px] bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex flex-col gap-3">
+                         <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                               <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 font-black uppercase">{rel.name[0]}</div>
+                               <div>
+                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{rel.type} {rel.livingTogether ? '🏠' : ''}</p>
+                                 <p className="text-sm font-black text-slate-900">{rel.name}</p>
+                               </div>
+                            </div>
+                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                               <div className="h-full bg-pink-500" style={{ width: `${rel.level}%` }} />
+                            </div>
+                         </div>
 
-                          {rel.type !== 'Enfant' && (
-                             <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 py-2 rounded-lg col-span-2">Action Spéciale (IA)</button>
-                          )}
+                         <div className="grid grid-cols-2 gap-2">
+                            {rel.name === 'Vieux Père Koffi' ? (
+                              <>
+                                <button onClick={() => interactWithKoffi('conseil')} className="text-[8px] font-black uppercase text-blue-600 bg-blue-50 py-2 rounded-lg">Conseil</button>
+                                <button onClick={() => interactWithKoffi('biere')} className="text-[8px] font-black uppercase text-amber-600 bg-amber-50 py-2 rounded-lg">Payer Bière</button>
+                                <button onClick={() => interactWithKoffi('business')} className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 py-2 rounded-lg">Parler Biz</button>
+                              </>
+                            ) : (
+                              <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-blue-600 bg-blue-50 py-2 rounded-lg">Discuter</button>
+                            )}
+                            <button onClick={() => socialInteract(rel.id, 'gift')} className="text-[8px] font-black uppercase text-purple-600 bg-purple-50 py-2 rounded-lg">Offrir Cadeau</button>
 
-                          {rel.level >= 40 && !['Enfant', 'Famille', 'Conjoint', 'Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
-                             <button onClick={() => socialInteract(rel.id, 'flirt')} className="text-[8px] font-black uppercase text-rose-600 bg-rose-50 py-2 rounded-lg">Draguer</button>
-                          )}
-                          {rel.level >= 60 && ['Ami', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
-                             <button onClick={() => socialInteract(rel.id, 'become_partner')} className="text-[8px] font-black uppercase text-pink-600 bg-pink-50 py-2 rounded-lg">
-                               Demander {rel.gender === 'Femme' ? 'Petite Amie' : 'Petit Ami'}
-                             </button>
-                          )}
-                          {rel.level > 70 && ['Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && !rel.livingTogether && (
-                             <button onClick={() => socialInteract(rel.id, 'cohabit')} className="text-[8px] font-black uppercase text-amber-600 bg-amber-50 py-2 rounded-lg">Vivre ensemble</button>
-                          )}
-                          {rel.level > 85 && ['Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && !rel.isSpouse && (
-                             <button onClick={() => socialInteract(rel.id, 'marry')} className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 py-2 rounded-lg">Mariage</button>
-                          )}
-                          {(rel.isSpouse || rel.livingTogether || rel.type === 'Maîtresse' || rel.type === 'Amant') && rel.type !== 'Enfant' && (
-                             <button onClick={() => socialInteract(rel.id, 'child')} className="text-[8px] font-black uppercase text-sky-600 bg-sky-50 py-2 rounded-lg">Faire un Enfant</button>
-                          )}
-                          {['Petit(e) ami(e)', 'Conjoint', 'Maîtresse', 'Amant'].includes(rel.type) && (
-                             <button onClick={() => socialInteract(rel.id, 'separate')} className="text-[8px] font-black uppercase text-slate-600 bg-slate-100 py-2 rounded-lg col-span-2">
-                               {rel.type === 'Conjoint' ? 'Divorcer' : 'Se Séparer'}
-                             </button>
-                          )}
-                       </div>
-                    </div>
-                  ))}
+                            {rel.type !== 'Enfant' && (
+                               <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 py-2 rounded-lg col-span-2">Action Spéciale (IA)</button>
+                            )}
+
+                            {rel.level >= 40 && !['Enfant', 'Famille', 'Conjoint', 'Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
+                               <button onClick={() => socialInteract(rel.id, 'flirt')} className="text-[8px] font-black uppercase text-rose-600 bg-rose-50 py-2 rounded-lg">Draguer</button>
+                            )}
+                            {rel.level >= 60 && ['Ami', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
+                               <button onClick={() => socialInteract(rel.id, 'become_partner')} className="text-[8px] font-black uppercase text-pink-600 bg-pink-50 py-2 rounded-lg text-center leading-tight">
+                                 Demander {rel.gender === 'Femme' ? 'Petite Amie' : 'Petit Ami'}
+                               </button>
+                            )}
+                            {rel.level > 70 && ['Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && !rel.livingTogether && (
+                               <button onClick={() => socialInteract(rel.id, 'cohabit')} className="text-[8px] font-black uppercase text-amber-600 bg-amber-50 py-2 rounded-lg">Vivre ensemble</button>
+                            )}
+                            {rel.level > 85 && ['Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && !rel.isSpouse && (
+                               <button onClick={() => socialInteract(rel.id, 'marry')} className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 py-2 rounded-lg">Mariage</button>
+                            )}
+                            {(rel.isSpouse || rel.livingTogether || rel.type === 'Maîtresse' || rel.type === 'Amant') && rel.type !== 'Enfant' && (
+                               <button onClick={() => socialInteract(rel.id, 'child')} className="text-[8px] font-black uppercase text-sky-600 bg-sky-50 py-2 rounded-lg">Faire un Enfant</button>
+                            )}
+                            {['Petit(e) ami(e)', 'Conjoint', 'Maîtresse', 'Amant'].includes(rel.type) && (
+                               <button onClick={() => socialInteract(rel.id, 'separate')} className="text-[8px] font-black uppercase text-slate-600 bg-slate-100 py-2 rounded-lg col-span-2">
+                                 {rel.type === 'Conjoint' ? 'Divorcer' : 'Se Séparer'}
+                               </button>
+                            )}
+                         </div>
+                      </div>
+                    ))}
+                  </div>
                </div>
             )}
 
             {activeTab === 'activites' && (
-               <div className="grid grid-cols-3 gap-3">
-                 <button onClick={() => setActiveTab('boutique')} className="flex flex-col items-center justify-center p-4 bg-orange-50 rounded-2xl border-2 border-orange-100 active:scale-95 transition-all">
+               <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2">
+                 <button onClick={() => setActiveTab('boutique')} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-orange-50 rounded-2xl border-2 border-orange-100 active:scale-95 transition-all">
                     <i className="fa-solid fa-shop text-orange-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Boutique</span>
                  </button>
-                 <button onClick={goToMall} className="flex flex-col items-center justify-center p-4 bg-fuchsia-50 rounded-2xl border-2 border-fuchsia-100 active:scale-95 transition-all">
+                 <button onClick={goToMall} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-fuchsia-50 rounded-2xl border-2 border-fuchsia-100 active:scale-95 transition-all">
                     <i className="fa-solid fa-bag-shopping text-fuchsia-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Mall</span>
                  </button>
-                 <button onClick={() => setSelectedPropertyId('education')} className="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100 active:scale-95 transition-all">
+                 <button onClick={() => setSelectedPropertyId('education')} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100 active:scale-95 transition-all">
                     <i className="fa-solid fa-graduation-cap text-blue-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Études</span>
                  </button>
@@ -1207,12 +1210,12 @@ const App: React.FC = () => {
                    { label: 'Église', icon: 'fa-hands-praying', color: 'text-indigo-500', ctx: 'Activity: Church' }
                  ].map(act => (
                    act.action ? (
-                     <button key={act.label} onClick={act.action} className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
+                     <button key={act.label} onClick={act.action} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
                        <i className={`fa-solid ${act.icon} ${act.color} text-2xl mb-1`}></i>
                        <span className="text-[10px] font-black uppercase text-slate-900 text-center">{act.label}</span>
                      </button>
                    ) : (
-                    <button key={act.label} onClick={async () => { setLoading(true); const ev = await gemini.generateNarrative(gameState, 'activity', act.ctx); if(ev) setCurrentEvent(ev); setLoading(false); }} className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
+                    <button key={act.label} onClick={async () => { setLoading(true); const ev = await gemini.generateNarrative(gameState, 'activity', act.ctx); if(ev) setCurrentEvent(ev); setLoading(false); }} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
                       <i className={`fa-solid ${act.icon} ${act.color} text-2xl mb-1`}></i>
                       <span className="text-[10px] font-black uppercase text-slate-900 text-center">{act.label}</span>
                     </button>
@@ -1222,39 +1225,45 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'boutique' && (
-              <div className="space-y-4 overflow-y-auto max-h-[400px] pb-10">
-                <div className="flex items-center gap-2">
+              <div className="space-y-4 pb-10">
+                <div className="flex items-center gap-2 px-1">
                   <button onClick={() => setActiveTab('activites')} className="text-slate-400"><i className="fa-solid fa-arrow-left"></i></button>
                   <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Boutique Babi</h3>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-6">
                    <div className="space-y-2">
-                     <p className="text-[9px] font-black text-slate-400 uppercase">Téléphones & Gadgets</p>
-                     <button onClick={() => buyItem({name: "Smartphone Android", price: 120000, type: "Phone"})} className="w-full flex justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-center">
-                        <span className="text-sm font-bold">Smartphone Android</span>
-                        <span className="text-xs font-black text-emerald-600">120.000 FCFA</span>
-                     </button>
+                     <p className="text-[9px] font-black text-slate-400 uppercase px-1">Téléphones & Gadgets</p>
+                     <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                       <button onClick={() => buyItem({name: "Smartphone Android", price: 120000, type: "Phone"})} className="flex-none w-[200px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
+                          <span className="text-sm font-bold">Smartphone Android</span>
+                          <span className="text-xs font-black text-emerald-600">120.000 FCFA</span>
+                       </button>
+                     </div>
                    </div>
                    <div className="space-y-2">
-                     <p className="text-[9px] font-black text-slate-400 uppercase">Cadeaux</p>
-                     {GIFTS.map(g => (
-                       <button key={g.id} onClick={() => buyItem({name: g.name, price: g.price, type: "Gift"})} className="w-full flex justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-center">
-                          <span className="text-sm font-bold">{g.name}</span>
-                          <span className="text-xs font-black text-emerald-600">{g.price.toLocaleString()} FCFA</span>
-                       </button>
-                     ))}
+                     <p className="text-[9px] font-black text-slate-400 uppercase px-1">Cadeaux</p>
+                     <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                       {GIFTS.map(g => (
+                         <button key={g.id} onClick={() => buyItem({name: g.name, price: g.price, type: "Gift"})} className="flex-none w-[180px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
+                            <span className="text-sm font-bold leading-tight">{g.name}</span>
+                            <span className="text-xs font-black text-emerald-600">{g.price.toLocaleString()} FCFA</span>
+                         </button>
+                       ))}
+                     </div>
                    </div>
                    <div className="space-y-2">
-                     <p className="text-[9px] font-black text-slate-400 uppercase">Véhicules</p>
-                     {VEHICLES.map(v => (
-                       <button key={v.id} onClick={() => buyVehicle(v)} className="w-full flex justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-center text-left">
-                          <div>
-                            <span className="text-sm font-bold block">{v.name}</span>
-                            <span className="text-[8px] uppercase text-slate-400">{v.isBusiness ? 'Business Rentable' : 'Personnel'}</span>
-                          </div>
-                          <span className="text-xs font-black text-emerald-600">{v.price.toLocaleString()} FCFA</span>
-                       </button>
-                     ))}
+                     <p className="text-[9px] font-black text-slate-400 uppercase px-1">Véhicules</p>
+                     <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                       {VEHICLES.map(v => (
+                         <button key={v.id} onClick={() => buyVehicle(v)} className="flex-none w-[220px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
+                            <div>
+                              <span className="text-sm font-bold block leading-tight">{v.name}</span>
+                              <span className="text-[8px] uppercase text-slate-400">{v.isBusiness ? 'Business Rentable' : 'Personnel'}</span>
+                            </div>
+                            <span className="text-xs font-black text-emerald-600">{v.price.toLocaleString()} FCFA</span>
+                         </button>
+                       ))}
+                     </div>
                    </div>
                 </div>
               </div>
@@ -1302,33 +1311,39 @@ const App: React.FC = () => {
                             <p className="text-2xl font-black">{gameState.player.stats.money.toLocaleString()} FCFA</p>
                          </div>
                          <div className="space-y-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase">Tes Emprunts</p>
-                            {gameState.player.loans.map(l => (
-                              <div key={l.id} className="p-3 bg-slate-50 rounded-2xl flex justify-between">
-                                 <span className="text-xs font-bold">{l.remainingAmount.toLocaleString()} FCFA</span>
-                                 <span className="text-[10px] text-orange-600 font-black">{l.monthsRemaining} mois</span>
-                              </div>
-                            ))}
+                            <p className="text-[10px] font-black text-slate-400 uppercase px-1">Tes Emprunts</p>
+                            <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                              {gameState.player.loans.map(l => (
+                                <div key={l.id} className="flex-none w-[180px] p-3 bg-slate-50 rounded-2xl flex justify-between">
+                                   <span className="text-xs font-bold">{l.remainingAmount.toLocaleString()} FCFA</span>
+                                   <span className="text-[10px] text-orange-600 font-black">{l.monthsRemaining} mois</span>
+                                </div>
+                              ))}
+                              {gameState.player.loans.length === 0 && <p className="text-[10px] text-slate-400 italic">Aucun prêt en cours.</p>}
+                            </div>
                          </div>
                       </div>
                     )}
 
                     {selectedApp === 'business' && (
                       <div className="space-y-4">
-                         <div className="grid grid-cols-2 gap-2 mb-4">
-                            <button onClick={() => launchBusiness('Boutique')} className="p-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase">Lancer Boutique (500k)</button>
-                            <button onClick={() => launchBusiness('Maquis')} className="p-3 bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase">Ouvrir Maquis (1M)</button>
+                         <div className="flex flex-row gap-2 mb-4 overflow-x-auto no-scrollbar">
+                            <button onClick={() => launchBusiness('Boutique')} className="flex-none w-[160px] p-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase">Lancer Boutique (500k)</button>
+                            <button onClick={() => launchBusiness('Maquis')} className="flex-none w-[160px] p-3 bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase">Ouvrir Maquis (1M)</button>
+                            <button onClick={() => launchBusiness('Transport')} className="flex-none w-[160px] p-3 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase">Transport/Gbaka (2M)</button>
                          </div>
                          <div className="space-y-2">
-                           <p className="text-[10px] font-black text-slate-400 uppercase">Tes Actifs</p>
-                           {gameState.player.businesses.map(b => (
-                             <div key={b.id} className="p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
-                                <p className="font-black text-blue-900">{b.name}</p>
-                                <p className="text-xs font-bold text-blue-600">Revenus mensuels: {b.monthlyRevenue.toLocaleString()} FCFA</p>
-                             </div>
-                           ))}
+                           <p className="text-[10px] font-black text-slate-400 uppercase px-1">Tes Actifs</p>
+                           <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                             {gameState.player.businesses.map(b => (
+                               <div key={b.id} className="flex-none w-[200px] p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
+                                  <p className="font-black text-blue-900 truncate">{b.name}</p>
+                                  <p className="text-xs font-bold text-blue-600">Revenus: {b.monthlyRevenue.toLocaleString()} FCFA</p>
+                               </div>
+                             ))}
+                           </div>
                          </div>
-                         {gameState.player.businesses.length === 0 && <p className="text-center text-slate-400 py-10 italic">Aucun business à gérer.</p>}
+                         {gameState.player.businesses.length === 0 && <p className="text-center text-slate-400 py-10 italic text-[10px] uppercase font-bold">Aucun business actif.</p>}
                       </div>
                     )}
 
@@ -1346,58 +1361,72 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'patrimoine' && (
-              <div className="space-y-6 overflow-y-auto max-h-[400px] pb-10">
-                <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Patrimoine & Business</h3>
+              <div className="space-y-6 pb-10">
+                <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest px-1">Patrimoine & Business</h3>
 
                 {/* Propriétés */}
                 <div className="space-y-3">
-                   <div className="flex justify-between items-center">
+                   <div className="flex justify-between items-center px-1">
                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Immobilier</p>
                      <button onClick={() => setSelectedPropertyId('new')} className="text-[8px] font-black bg-blue-600 text-white px-2 py-1 rounded">Acheter/Louer</button>
                    </div>
-                   {gameState.player.assets.properties.map(p => (
-                     <div key={p.id} className="p-4 bg-white border-2 border-slate-100 rounded-2xl">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <p className="text-sm font-black">{p.name}</p>
-                            <p className="text-[10px] text-slate-500 uppercase font-bold">{p.location} - {p.type === 'OWN' ? 'Propriétaire' : 'Locataire'}</p>
+                   <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                     {gameState.player.assets.properties.map(p => (
+                       <div key={p.id} className="flex-none w-[260px] p-4 bg-white border-2 border-slate-100 rounded-2xl">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="text-sm font-black">{p.name}</p>
+                              <p className="text-[10px] text-slate-500 uppercase font-bold leading-tight">{p.location} - {p.type === 'OWN' ? 'Propriétaire' : 'Locataire'}</p>
+                            </div>
+                            <button onClick={() => setSelectedPropertyId(p.id)} className="text-[9px] font-black text-orange-600 uppercase">Meubler</button>
                           </div>
-                          <button onClick={() => setSelectedPropertyId(p.id)} className="text-[9px] font-black text-orange-600 uppercase">Meubler</button>
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                          {p.furnishings.map((f, i) => (
-                            <span key={i} className="text-[8px] bg-slate-100 px-2 py-1 rounded font-bold uppercase">{f.name}</span>
-                          ))}
-                        </div>
-                     </div>
-                   ))}
+                          <div className="flex gap-2 flex-wrap">
+                            {p.furnishings.length === 0 && <span className="text-[8px] text-slate-400 uppercase">Vide</span>}
+                            {p.furnishings.map((f, i) => (
+                              <span key={i} className="text-[8px] bg-slate-100 px-2 py-1 rounded font-bold uppercase">{f.name}</span>
+                            ))}
+                          </div>
+                       </div>
+                     ))}
+                     {gameState.player.assets.properties.length === 0 && (
+                       <div className="p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl w-full text-center">
+                         <p className="text-[10px] font-bold text-slate-400 uppercase">Aucune propriété</p>
+                       </div>
+                     )}
+                   </div>
                 </div>
 
                 {/* Businesses */}
                 <div className="space-y-3">
-                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mes Business</p>
-                   {gameState.player.businesses.length === 0 && <p className="text-[10px] italic text-slate-400">Aucun business actif.</p>}
-                   {gameState.player.businesses.map(b => (
-                     <div key={b.id} className="p-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl flex justify-between items-center">
-                        <div>
-                          <p className="text-sm font-black text-emerald-900">{b.name}</p>
-                          <p className="text-[9px] text-emerald-600 uppercase font-bold">Type: {b.type}</p>
-                        </div>
-                        <p className="text-xs font-black text-emerald-700">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
-                     </div>
-                   ))}
+                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Mes Business</p>
+                   <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                     {gameState.player.businesses.map(b => (
+                       <div key={b.id} className="flex-none w-[240px] p-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl flex flex-col gap-2">
+                          <div>
+                            <p className="text-sm font-black text-emerald-900">{b.name}</p>
+                            <p className="text-[9px] text-emerald-600 uppercase font-bold">Type: {b.type}</p>
+                          </div>
+                          <p className="text-xs font-black text-emerald-700">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
+                       </div>
+                     ))}
+                     {gameState.player.businesses.length === 0 && (
+                       <div className="p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl w-full text-center">
+                         <p className="text-[10px] font-bold text-slate-400 uppercase">Aucun business actif</p>
+                       </div>
+                     )}
+                   </div>
                 </div>
 
                 {/* Banque */}
                 <div className="space-y-3">
-                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Services Bancaires</p>
-                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => takeLoan(200000, 10)} className="p-3 bg-blue-50 border-2 border-blue-100 rounded-2xl text-left">
-                      <p className="text-[10px] font-black text-blue-600 uppercase">Prêt Consom.</p>
+                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Services Bancaires</p>
+                   <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                    <button onClick={() => takeLoan(200000, 10)} className="flex-none w-[180px] p-4 bg-blue-50 border-2 border-blue-100 rounded-2xl text-left">
+                      <p className="text-[10px] font-black text-blue-600 uppercase mb-1">Prêt Consom.</p>
                       <p className="text-xs font-black">200.000 FCFA</p>
                     </button>
-                    <button onClick={() => takeLoan(1000000, 24)} className="p-3 bg-indigo-50 border-2 border-indigo-100 rounded-2xl text-left">
-                      <p className="text-[10px] font-black text-indigo-600 uppercase">Prêt Invest.</p>
+                    <button onClick={() => takeLoan(1000000, 24)} className="flex-none w-[180px] p-4 bg-indigo-50 border-2 border-indigo-100 rounded-2xl text-left">
+                      <p className="text-[10px] font-black text-indigo-600 uppercase mb-1">Prêt Invest.</p>
                       <p className="text-xs font-black">1.000.000 FCFA</p>
                     </button>
                   </div>
@@ -1439,42 +1468,44 @@ const App: React.FC = () => {
                         ) : (
                           <div className="space-y-4">
                             <p className="text-[10px] font-black text-slate-400 uppercase">S'inscrire à une formation</p>
-                            {[
-                              { level: 'Certification', price: 50000, duration: '2 mois' },
-                              { level: 'BTS', price: 100000, duration: '3 mois' },
-                              { level: 'Licence', price: 200000, duration: '6 mois' },
-                              { level: 'Master', price: 500000, duration: '6 mois' },
-                              { level: 'Doctorat', price: 1000000, duration: '6 mois' }
-                            ].map(d => (
-                              <div key={d.level} className="p-4 border-2 border-slate-100 rounded-2xl space-y-3">
-                                <div className="flex justify-between items-center">
-                                  <p className="font-black text-slate-900">{d.level}</p>
-                                  <p className="text-xs font-black text-emerald-600">{d.price.toLocaleString()} FCFA</p>
+                            <div className="flex flex-row gap-4 overflow-x-auto no-scrollbar pb-2">
+                              {[
+                                { level: 'Certification', price: 50000, duration: '2 mois' },
+                                { level: 'BTS', price: 100000, duration: '3 mois' },
+                                { level: 'Licence', price: 200000, duration: '6 mois' },
+                                { level: 'Master', price: 500000, duration: '6 mois' },
+                                { level: 'Doctorat', price: 1000000, duration: '6 mois' }
+                              ].map(d => (
+                                <div key={d.level} className="flex-none w-[220px] p-4 border-2 border-slate-100 rounded-2xl space-y-3">
+                                  <div className="flex justify-between items-center">
+                                    <p className="font-black text-slate-900">{d.level}</p>
+                                    <p className="text-xs font-black text-emerald-600">{d.price.toLocaleString()} FCFA</p>
+                                  </div>
+                                  <select
+                                    className="w-full bg-slate-100 border-none p-2 rounded-lg text-[10px] font-black uppercase"
+                                    onChange={(e) => {
+                                      if (e.target.value) {
+                                        enrollDegree(d.level as any, e.target.value);
+                                        setSelectedPropertyId(null);
+                                      }
+                                    }}
+                                    defaultValue=""
+                                  >
+                                    <option value="" disabled>Choisir Spécialité</option>
+                                    <option value="Informatique">Informatique</option>
+                                    <option value="Droit">Droit</option>
+                                    <option value="Ressources Humaines">Ressources Humaines</option>
+                                    <option value="Comptabilité">Comptabilité</option>
+                                    <option value="Gestion Commerciale">Gestion Commerciale</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Communication">Communication</option>
+                                    <option value="Santé">Santé</option>
+                                    <option value="Génie Civil">Génie Civil</option>
+                                    <option value="Architecture">Architecture</option>
+                                  </select>
                                 </div>
-                                <select
-                                  className="w-full bg-slate-100 border-none p-2 rounded-lg text-[10px] font-black uppercase"
-                                  onChange={(e) => {
-                                    if (e.target.value) {
-                                      enrollDegree(d.level as any, e.target.value);
-                                      setSelectedPropertyId(null);
-                                    }
-                                  }}
-                                  defaultValue=""
-                                >
-                                  <option value="" disabled>Choisir Spécialité</option>
-                                  <option value="Informatique">Informatique</option>
-                                  <option value="Droit">Droit</option>
-                                  <option value="Ressources Humaines">Ressources Humaines</option>
-                                  <option value="Comptabilité">Comptabilité</option>
-                                  <option value="Gestion Commerciale">Gestion Commerciale</option>
-                                  <option value="Marketing">Marketing</option>
-                                  <option value="Communication">Communication</option>
-                                  <option value="Santé">Santé</option>
-                                  <option value="Génie Civil">Génie Civil</option>
-                                  <option value="Architecture">Architecture</option>
-                                </select>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         )}
                         <div className="space-y-2 pt-4 border-t border-slate-100">
@@ -1487,24 +1518,24 @@ const App: React.FC = () => {
                         </div>
                       </div>
                    ) : selectedPropertyId === 'new' ? (
-                     <div className="space-y-4">
+                     <div className="flex flex-row gap-4 overflow-x-auto no-scrollbar pb-2">
                        {NEIGHBORHOODS.map(n => (
-                         <div key={n.name} className="p-4 border-2 border-slate-100 rounded-2xl space-y-3">
+                         <div key={n.name} className="flex-none w-[240px] p-4 border-2 border-slate-100 rounded-2xl space-y-3">
                             <p className="font-black text-slate-900">{n.name} <span className="text-[10px] text-orange-500">Prestige: {n.prestige}</span></p>
-                            <div className="grid grid-cols-2 gap-2">
-                               <button onClick={() => { buyHouse(n, 'RENT'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-blue-50 text-blue-600 py-2 rounded-lg">LOUER ({n.rent.toLocaleString()}/m)</button>
-                               <button onClick={() => { buyHouse(n, 'OWN'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-emerald-50 text-emerald-600 py-2 rounded-lg">ACHETER ({n.basePrice.toLocaleString()})</button>
+                            <div className="grid grid-cols-1 gap-2">
+                               <button onClick={() => { buyHouse(n, 'RENT'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-blue-50 text-blue-600 py-3 rounded-xl">LOUER ({n.rent.toLocaleString()}/m)</button>
+                               <button onClick={() => { buyHouse(n, 'OWN'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-emerald-50 text-emerald-600 py-3 rounded-xl">ACHETER ({n.basePrice.toLocaleString()})</button>
                             </div>
                          </div>
                        ))}
                      </div>
                    ) : (
-                     <div className="space-y-3">
+                     <div className="flex flex-row gap-4 overflow-x-auto no-scrollbar pb-2">
                        {FURNITURE_ITEMS.map(f => (
-                         <button key={f.id} onClick={() => buyFurniture(f, selectedPropertyId)} className="w-full flex justify-between items-center p-4 border-2 border-slate-100 rounded-2xl">
+                         <button key={f.id} onClick={() => buyFurniture(f, selectedPropertyId)} className="flex-none w-[200px] flex flex-col justify-between items-start p-4 border-2 border-slate-100 rounded-2xl gap-4">
                             <div className="text-left">
-                              <p className="text-sm font-bold">{f.name}</p>
-                              <p className="text-[8px] text-emerald-600 font-black uppercase">Santé +{f.healthBonus} | Bonheur +{f.happinessBonus}</p>
+                              <p className="text-sm font-bold leading-tight">{f.name}</p>
+                              <p className="text-[8px] text-emerald-600 font-black uppercase mt-1">Santé +{f.healthBonus}<br/>Bonheur +{f.happinessBonus}</p>
                             </div>
                             <p className="text-xs font-black text-emerald-600">{f.price.toLocaleString()} FCFA</p>
                          </button>
