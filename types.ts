@@ -25,10 +25,12 @@ export interface Job {
   requiredDegree?: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification';
   requiredSpecialty?: string;
   category: string;
+  isCDI: boolean;
 }
 
 export interface Loan {
   id: string;
+  bankId: string;
   amount: number;
   remainingAmount: number;
   monthlyPayment: number;
@@ -58,6 +60,8 @@ export interface Property {
 export interface Vehicle {
   id: string;
   name: string;
+  brand: string;
+  dealership: string;
   price: number;
   prestige: number;
   isBusiness: boolean; // For Gbakas
@@ -118,6 +122,24 @@ export interface EducationState {
   degreesObtained: string[];
 }
 
+export type PoliticalRank = 'Militant' | 'Cadre' | 'Maire' | 'Député';
+
+export interface PoliticalState {
+  partyId: string | null;
+  rank: PoliticalRank | null;
+  membershipFee: number;
+  salary: number;
+}
+
+export interface Bank {
+  id: string;
+  name: string;
+  interestRate: number;
+  minSalary: number;
+  requireCDI: boolean;
+  minCreditScore: number;
+}
+
 export interface GameState {
   isRegistered: boolean;
   timer: number;
@@ -134,6 +156,8 @@ export interface GameState {
       vehicles: Vehicle[];
     };
     loans: Loan[]; // Suivi des emprunts
+    creditScore: number;
+    politicalState: PoliticalState;
     logs: LogEntry[];
     education: string;
     educationState: EducationState;
@@ -142,4 +166,5 @@ export interface GameState {
     investments: Investment[];
   };
   marketBusinesses: Business[];
+  banks: Bank[];
 }
