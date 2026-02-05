@@ -21,7 +21,7 @@ export class GeminiService {
 
   async generateNarrative(
     state: GameState, 
-    type: 'yearly' | 'interview' | 'social' | 'legal' | 'activity' | 'job_challenge' | 'debt_event' | 'social_npc' | 'shopping', 
+    type: 'yearly' | 'interview' | 'social' | 'legal' | 'activity' | 'job_challenge' | 'debt_event' | 'social_npc' | 'shopping' | 'random_event',
     extra?: string
   ) {
     // Calcul des dettes pour le contexte de l'IA
@@ -41,8 +41,9 @@ export class GeminiService {
       2. Si 'social_npc': Tu joues le rôle de ${extra?.split(':')[1] || 'un ami'}. Donne un conseil de sage ou une opportunité.
       3. Si 'shopping': Le joueur est dans un centre commercial (Cap Sud, Prima, Cosmos Yopougon). Propose des articles à acheter qui boostent les 'Looks' ou le 'Bonheur'.
       4. Si 'interview': Simule une question cruciale. Un choix doit avoir actionType: 'HIRE', les autres 'FAIL'.
-      5. Si 'job_challenge': Défi pro réaliste à Abidjan.
-      6. Retourne UNIQUEMENT du JSON.
+      5. Si 'job_challenge': Défi pro réaliste à Abidjan (problème avec un collègue, erreur technique, opportunité, etc.).
+      6. Si 'random_event': Incident imprévu de la vie quotidienne à Abidjan (renverser quelque chose, embouteillage, rencontre fortuite, petite galère).
+      7. Retourne UNIQUEMENT du JSON.
     `;
 
     try {
