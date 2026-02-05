@@ -1,0 +1,17 @@
+# Secrets (IMPORTANT)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dépendances
+node_modules/
+
+# Build (Fichiers générés)
+dist/
+build/
+
+# Système
+.DS_Store
+Thumbs.db

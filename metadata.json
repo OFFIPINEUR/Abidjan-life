@@ -1,0 +1,7 @@
+{
+  "name": "Abidjan Life: Alain Charles",
+  "description": "Un jeu de simulation de vie à Abidjan. Incarnez Alain Charles, un graphiste talentueux cherchant le succès et l'amour dans la perle des lagunes.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
