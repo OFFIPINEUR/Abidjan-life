@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { GameState, Stats, Job, LogEntry, Relationship, Property, Company, Loan, Business, Investment, BusinessType } from './types';
+import { GameState, Stats, Job, LogEntry, Relationship, Property, Company, Loan, Business, Investment, BusinessType, PoliticalRank, Bank, Vehicle } from './types';
 import { GeminiService } from './services/geminiService';
 
 const INITIAL_STATS: Stats = {
@@ -29,56 +29,56 @@ const COMPANIES: Company[] = [
 
 const JOBS: Job[] = [
   // Secteur Informel
-  { company: COMPANIES[3], title: "Gérant de Maquis", salary: 85000, stressLevel: 45, requirement: 10, workingHours: "17h - 02h", category: "Secteur Informel" },
-  { company: COMPANIES[1], title: "Laveur de Bus", salary: 55000, stressLevel: 65, requirement: 5, workingHours: "05h - 14h", category: "Secteur Informel" },
-  { company: COMPANIES[1], title: "Chauffeur de Gbaka", salary: 120000, stressLevel: 85, requirement: 15, workingHours: "04h - 22h", category: "Secteur Informel" },
-  { company: COMPANIES[8], title: "Agent de Sécurité", salary: 110000, stressLevel: 40, requirement: 10, workingHours: "19h - 07h", category: "Secteur Informel" },
-  { company: COMPANIES[3], title: "Vendeur de Garba", salary: 75000, stressLevel: 50, requirement: 5, workingHours: "07h - 16h", category: "Secteur Informel" },
-  { company: COMPANIES[3], title: "Djoutai (Dockeur)", salary: 95000, stressLevel: 90, requirement: 10, workingHours: "06h - 18h", category: "Secteur Informel" },
+  { company: COMPANIES[3], title: "Gérant de Maquis", salary: 85000, stressLevel: 45, requirement: 10, workingHours: "17h - 02h", category: "Secteur Informel", isCDI: false },
+  { company: COMPANIES[1], title: "Laveur de Bus", salary: 55000, stressLevel: 65, requirement: 5, workingHours: "05h - 14h", category: "Secteur Informel", isCDI: false },
+  { company: COMPANIES[1], title: "Chauffeur de Gbaka", salary: 120000, stressLevel: 85, requirement: 15, workingHours: "04h - 22h", category: "Secteur Informel", isCDI: false },
+  { company: COMPANIES[8], title: "Agent de Sécurité", salary: 110000, stressLevel: 40, requirement: 10, workingHours: "19h - 07h", category: "Secteur Informel", isCDI: false },
+  { company: COMPANIES[3], title: "Vendeur de Garba", salary: 75000, stressLevel: 50, requirement: 5, workingHours: "07h - 16h", category: "Secteur Informel", isCDI: false },
+  { company: COMPANIES[3], title: "Djoutai (Dockeur)", salary: 95000, stressLevel: 90, requirement: 10, workingHours: "06h - 18h", category: "Secteur Informel", isCDI: false },
 
   // Informatique & Tech
-  { company: COMPANIES[5], title: "Technicien Maintenance", salary: 250000, stressLevel: 40, requirement: 40, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
-  { company: COMPANIES[5], title: "Développeur Web Junior", salary: 450000, stressLevel: 60, requirement: 60, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
-  { company: COMPANIES[0], title: "Ingénieur Logiciel", salary: 850000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
-  { company: COMPANIES[5], title: "Expert IA / Data Scientist", salary: 1500000, stressLevel: 65, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Doctorat', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
-  { company: COMPANIES[0], title: "Analyste Cyber-sécurité", salary: 900000, stressLevel: 80, requirement: 85, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique', category: "Informatique & Tech" },
+  { company: COMPANIES[5], title: "Technicien Maintenance", salary: 250000, stressLevel: 40, requirement: 40, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Informatique', category: "Informatique & Tech", isCDI: true },
+  { company: COMPANIES[5], title: "Développeur Web Junior", salary: 450000, stressLevel: 60, requirement: 60, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Informatique', category: "Informatique & Tech", isCDI: true },
+  { company: COMPANIES[0], title: "Ingénieur Logiciel", salary: 850000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique', category: "Informatique & Tech", isCDI: true },
+  { company: COMPANIES[5], title: "Expert IA / Data Scientist", salary: 1500000, stressLevel: 65, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Doctorat', requiredSpecialty: 'Informatique', category: "Informatique & Tech", isCDI: true },
+  { company: COMPANIES[0], title: "Analyste Cyber-sécurité", salary: 900000, stressLevel: 80, requirement: 85, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Informatique', category: "Informatique & Tech", isCDI: true },
 
   // Droit & Justice
-  { company: COMPANIES[11], title: "Clerc d'Avocat", salary: 200000, stressLevel: 50, requirement: 45, workingHours: "08h - 18h", requiredDegree: 'BTS', requiredSpecialty: 'Droit', category: "Droit & Justice" },
-  { company: COMPANIES[8], title: "Assistant Juridique", salary: 350000, stressLevel: 45, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Droit', category: "Droit & Justice" },
-  { company: COMPANIES[4], title: "Juriste d'Affaires", salary: 750000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Droit', category: "Droit & Justice" },
-  { company: COMPANIES[6], title: "Professeur de Droit", salary: 1200000, stressLevel: 50, requirement: 95, workingHours: "08h - 16h", requiredDegree: 'Doctorat', requiredSpecialty: 'Droit', category: "Droit & Justice" },
-  { company: COMPANIES[11], title: "Magistrat Junior", salary: 800000, stressLevel: 85, requirement: 90, workingHours: "08h - 17h", requiredDegree: 'Master', requiredSpecialty: 'Droit', category: "Droit & Justice" },
+  { company: COMPANIES[11], title: "Clerc d'Avocat", salary: 200000, stressLevel: 50, requirement: 45, workingHours: "08h - 18h", requiredDegree: 'BTS', requiredSpecialty: 'Droit', category: "Droit & Justice", isCDI: true },
+  { company: COMPANIES[8], title: "Assistant Juridique", salary: 350000, stressLevel: 45, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Droit', category: "Droit & Justice", isCDI: true },
+  { company: COMPANIES[4], title: "Juriste d'Affaires", salary: 750000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Droit', category: "Droit & Justice", isCDI: true },
+  { company: COMPANIES[6], title: "Professeur de Droit", salary: 1200000, stressLevel: 50, requirement: 95, workingHours: "08h - 16h", requiredDegree: 'Doctorat', requiredSpecialty: 'Droit', category: "Droit & Justice", isCDI: true },
+  { company: COMPANIES[11], title: "Magistrat Junior", salary: 800000, stressLevel: 85, requirement: 90, workingHours: "08h - 17h", requiredDegree: 'Master', requiredSpecialty: 'Droit', category: "Droit & Justice", isCDI: true },
 
   // Comptabilité & Finance
-  { company: COMPANIES[4], title: "Aide Comptable", salary: 180000, stressLevel: 40, requirement: 40, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
-  { company: COMPANIES[4], title: "Comptable Junior", salary: 400000, stressLevel: 65, requirement: 65, workingHours: "08h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
-  { company: COMPANIES[4], title: "Contrôleur de Gestion", salary: 800000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
-  { company: COMPANIES[4], title: "Expert Comptable", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 20h", requiredDegree: 'Doctorat', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
-  { company: COMPANIES[4], title: "Analyste Financier", salary: 950000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance" },
+  { company: COMPANIES[4], title: "Aide Comptable", salary: 180000, stressLevel: 40, requirement: 40, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance", isCDI: true },
+  { company: COMPANIES[4], title: "Comptable Junior", salary: 400000, stressLevel: 65, requirement: 65, workingHours: "08h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance", isCDI: true },
+  { company: COMPANIES[4], title: "Contrôleur de Gestion", salary: 800000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance", isCDI: true },
+  { company: COMPANIES[4], title: "Expert Comptable", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 20h", requiredDegree: 'Doctorat', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance", isCDI: true },
+  { company: COMPANIES[4], title: "Analyste Financier", salary: 950000, stressLevel: 75, requirement: 85, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Comptabilité', category: "Comptabilité & Finance", isCDI: true },
 
   // Ressources Humaines
-  { company: COMPANIES[0], title: "Gestionnaire de Paie", salary: 280000, stressLevel: 45, requirement: 50, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
-  { company: COMPANIES[0], title: "Chargé de Recrutement", salary: 380000, stressLevel: 50, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
-  { company: COMPANIES[0], title: "Responsable RH", salary: 900000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
-  { company: COMPANIES[0], title: "Directeur RH", salary: 1600000, stressLevel: 80, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines" },
+  { company: COMPANIES[0], title: "Gestionnaire de Paie", salary: 280000, stressLevel: 45, requirement: 50, workingHours: "08h - 17h", requiredDegree: 'BTS', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines", isCDI: true },
+  { company: COMPANIES[0], title: "Chargé de Recrutement", salary: 380000, stressLevel: 50, requirement: 55, workingHours: "08h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines", isCDI: true },
+  { company: COMPANIES[0], title: "Responsable RH", salary: 900000, stressLevel: 70, requirement: 80, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines", isCDI: true },
+  { company: COMPANIES[0], title: "Directeur RH", salary: 1600000, stressLevel: 80, requirement: 95, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Ressources Humaines', category: "Ressources Humaines", isCDI: true },
 
   // Santé
-  { company: COMPANIES[9], title: "Aide-Soignant", salary: 150000, stressLevel: 60, requirement: 30, workingHours: "07h - 19h", requiredDegree: 'Certification', requiredSpecialty: 'Santé', category: "Santé" },
-  { company: COMPANIES[9], title: "Infirmier d'État", salary: 350000, stressLevel: 70, requirement: 60, workingHours: "07h - 19h", requiredDegree: 'Licence', requiredSpecialty: 'Santé', category: "Santé" },
-  { company: COMPANIES[9], title: "Médecin Généraliste", salary: 850000, stressLevel: 80, requirement: 85, workingHours: "08h - 18h (Garde)", requiredDegree: 'Master', requiredSpecialty: 'Santé', category: "Santé" },
-  { company: COMPANIES[9], title: "Chirurgien Spécialiste", salary: 2500000, stressLevel: 95, requirement: 98, workingHours: "Irrégulier", requiredDegree: 'Doctorat', requiredSpecialty: 'Santé', category: "Santé" },
+  { company: COMPANIES[9], title: "Aide-Soignant", salary: 150000, stressLevel: 60, requirement: 30, workingHours: "07h - 19h", requiredDegree: 'Certification', requiredSpecialty: 'Santé', category: "Santé", isCDI: true },
+  { company: COMPANIES[9], title: "Infirmier d'État", salary: 350000, stressLevel: 70, requirement: 60, workingHours: "07h - 19h", requiredDegree: 'Licence', requiredSpecialty: 'Santé', category: "Santé", isCDI: true },
+  { company: COMPANIES[9], title: "Médecin Généraliste", salary: 850000, stressLevel: 80, requirement: 85, workingHours: "08h - 18h (Garde)", requiredDegree: 'Master', requiredSpecialty: 'Santé', category: "Santé", isCDI: true },
+  { company: COMPANIES[9], title: "Chirurgien Spécialiste", salary: 2500000, stressLevel: 95, requirement: 98, workingHours: "Irrégulier", requiredDegree: 'Doctorat', requiredSpecialty: 'Santé', category: "Santé", isCDI: true },
 
   // BTP & Ingénierie
-  { company: COMPANIES[10], title: "Chef de Chantier Junior", salary: 400000, stressLevel: 75, requirement: 55, workingHours: "07h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Génie Civil', category: "BTP & Ingénierie" },
-  { company: COMPANIES[10], title: "Ingénieur Structure", salary: 900000, stressLevel: 70, requirement: 85, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Génie Civil', category: "BTP & Ingénierie" },
-  { company: COMPANIES[10], title: "Architecte", salary: 1200000, stressLevel: 65, requirement: 90, workingHours: "09h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Architecture', category: "BTP & Ingénierie" },
+  { company: COMPANIES[10], title: "Chef de Chantier Junior", salary: 400000, stressLevel: 75, requirement: 55, workingHours: "07h - 17h", requiredDegree: 'Licence', requiredSpecialty: 'Génie Civil', category: "BTP & Ingénierie", isCDI: true },
+  { company: COMPANIES[10], title: "Ingénieur Structure", salary: 900000, stressLevel: 70, requirement: 85, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Génie Civil', category: "BTP & Ingénierie", isCDI: true },
+  { company: COMPANIES[10], title: "Architecte", salary: 1200000, stressLevel: 65, requirement: 90, workingHours: "09h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Architecture', category: "BTP & Ingénierie", isCDI: true },
 
   // Marketing & Communication
-  { company: COMPANIES[7], title: "Graphiste Junior", salary: 220000, stressLevel: 45, requirement: 45, workingHours: "09h - 18h", requiredDegree: 'BTS', requiredSpecialty: 'Communication', category: "Marketing & Communication" },
-  { company: COMPANIES[7], title: "Community Manager", salary: 300000, stressLevel: 40, requirement: 50, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Communication', category: "Marketing & Communication" },
-  { company: COMPANIES[0], title: "Chef de Produit", salary: 700000, stressLevel: 65, requirement: 75, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Marketing', category: "Marketing & Communication" },
-  { company: COMPANIES[0], title: "Directeur Marketing", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Marketing', category: "Marketing & Communication" }
+  { company: COMPANIES[7], title: "Graphiste Junior", salary: 220000, stressLevel: 45, requirement: 45, workingHours: "09h - 18h", requiredDegree: 'BTS', requiredSpecialty: 'Communication', category: "Marketing & Communication", isCDI: true },
+  { company: COMPANIES[7], title: "Community Manager", salary: 300000, stressLevel: 40, requirement: 50, workingHours: "09h - 18h", requiredDegree: 'Licence', requiredSpecialty: 'Communication', category: "Marketing & Communication", isCDI: true },
+  { company: COMPANIES[0], title: "Chef de Produit", salary: 700000, stressLevel: 65, requirement: 75, workingHours: "08h - 18h", requiredDegree: 'Master', requiredSpecialty: 'Marketing', category: "Marketing & Communication", isCDI: true },
+  { company: COMPANIES[0], title: "Directeur Marketing", salary: 1800000, stressLevel: 85, requirement: 95, workingHours: "08h - 19h", requiredDegree: 'Master', requiredSpecialty: 'Marketing', category: "Marketing & Communication", isCDI: true }
 ];
 
 const MONTHS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -110,11 +110,29 @@ const GIFTS = [
   { id: 'g4', name: "Bouquet de fleurs", price: 10000, levelBonus: 3 }
 ];
 
-const VEHICLES = [
-  { id: 'v1', name: "Gbaka (Occasion)", price: 8000000, prestige: 10, isBusiness: true },
-  { id: 'v2', name: "Toyota Corolla", price: 12000000, prestige: 40, isBusiness: false },
-  { id: 'v3', name: "Range Rover", price: 65000000, prestige: 95, isBusiness: false },
-  { id: 'v4', name: "Sotra (Mini bus)", price: 15000000, prestige: 20, isBusiness: true }
+const VEHICLES: Vehicle[] = [
+  { id: 'v1', name: "Gbaka (Occasion)", brand: "Isuzu", dealership: "Occasions Yopougon", price: 8000000, prestige: 10, isBusiness: true },
+  { id: 'v2', name: "Toyota Corolla", brand: "Toyota", dealership: "CFAO Motors", price: 12000000, prestige: 40, isBusiness: false },
+  { id: 'v3', name: "Range Rover Vogue", brand: "Land Rover", dealership: "Concessionnaire Chic", price: 65000000, prestige: 95, isBusiness: false },
+  { id: 'v4', name: "Sotra (Mini bus)", brand: "Tata", dealership: "SOTRA Pro", price: 15000000, prestige: 20, isBusiness: true },
+  { id: 'v5', name: "Moto Sunda", brand: "Sunda", dealership: "Babi Moto", price: 600000, prestige: 5, isBusiness: false },
+  { id: 'v6', name: "Mercedes Classe S", brand: "Mercedes", dealership: "Concessionnaire Chic", price: 85000000, prestige: 98, isBusiness: false },
+  { id: 'v7', name: "BMW M4", brand: "BMW", dealership: "Concessionnaire Chic", price: 55000000, prestige: 90, isBusiness: false },
+  { id: 'v8', name: "Peugeot 408", brand: "Peugeot", dealership: "CFAO Motors", price: 35000000, prestige: 75, isBusiness: false },
+  { id: 'v9', name: "V8 (Toyota Land Cruiser)", brand: "Toyota", dealership: "CFAO Motors", price: 75000000, prestige: 96, isBusiness: false }
+];
+
+export const POLITICAL_PARTIES = [
+  { id: 'p1', name: "Parti du Progrès Ivoirien (PPI)", ideology: "Libéralisme", color: "bg-orange-600", entrySmarts: 40 },
+  { id: 'p2', name: "Union pour la Renaissance (UR)", ideology: "Socialisme", color: "bg-emerald-600", entrySmarts: 45 },
+  { id: 'p3', name: "Rassemblement des Éléphants (RE)", ideology: "Nationalisme", color: "bg-blue-600", entrySmarts: 50 }
+];
+
+const BANKS: Bank[] = [
+  { id: 'b1', name: "BNI (Banque Nationale)", interestRate: 0.12, minSalary: 100000, requireCDI: false, minCreditScore: 0 },
+  { id: 'b2', name: "Société Générale CI", interestRate: 0.09, minSalary: 300000, requireCDI: true, minCreditScore: 3 },
+  { id: 'b3', name: "NSIA Banque", interestRate: 0.10, minSalary: 200000, requireCDI: true, minCreditScore: 1 },
+  { id: 'b4', name: "BACI (Banque Atlantique)", interestRate: 0.11, minSalary: 150000, requireCDI: false, minCreditScore: 0 }
 ];
 
 const BUSINESS_CONFIG: Record<string, { baseCost: number, baseRevenue: number }> = {
@@ -147,6 +165,13 @@ const App: React.FC = () => {
       ],
       assets: { properties: [], vehicles: [] },
       loans: [],
+      creditScore: 0,
+      politicalState: {
+        partyId: null,
+        rank: null,
+        membershipFee: 0,
+        salary: 0
+      },
       education: "Baccalauréat",
       educationState: {
         currentDegree: null,
@@ -159,11 +184,12 @@ const App: React.FC = () => {
       businesses: [],
       investments: []
     },
-    marketBusinesses: []
+    marketBusinesses: [],
+    banks: BANKS
   });
 
   const [activeTab, setActiveTab] = useState<'vie' | 'travail' | 'social' | 'patrimoine' | 'activites' | 'boutique' | 'smartphone' | 'smartphone_app'>('vie');
-  const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | null>(null);
+  const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | 'politics' | null>(null);
   const [businessTab, setBusinessTab] = useState<'mine' | 'launch' | 'market' | 'invest'>('mine');
   const [currentEvent, setCurrentEvent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -623,6 +649,8 @@ const App: React.FC = () => {
     
     const businessIncome = gameState.player.businesses.reduce((acc, b) => acc + b.monthlyRevenue, 0);
     const investmentIncome = gameState.player.investments.reduce((acc, inv) => acc + Math.round(inv.currentValue * inv.monthlyYield), 0);
+    const politicalIncome = gameState.player.politicalState.salary;
+    const politicalFee = gameState.player.politicalState.membershipFee;
     const childrenCount = gameState.player.relations.filter(r => r.type === 'Enfant').length;
     const totalChildSupport = gameState.player.relations.reduce((acc, r) => acc + (r.childSupport || 0), 0);
     const childExpenses = childrenCount * 30000;
@@ -656,7 +684,7 @@ const App: React.FC = () => {
         remainingAmount: l.remainingAmount - l.monthlyPayment
       })).filter(l => l.monthsRemaining > 0);
 
-      const netIncome = monthlySalary + businessIncome + investmentIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport;
+      const netIncome = monthlySalary + businessIncome + investmentIncome + politicalIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport - politicalFee;
 
       const updatedInvestments = prev.player.investments.map(inv => {
         if (inv.type === 'STOCK') {
@@ -685,6 +713,7 @@ const App: React.FC = () => {
       }
 
       const isStudyingAndWorking = prev.player.job && prev.player.educationState.currentDegree;
+      const politicalPrestigeBonus = prev.player.politicalState.rank === 'Maire' ? 5 : (prev.player.politicalState.rank === 'Député' ? 8 : 0);
 
       return {
         ...prev,
@@ -693,6 +722,7 @@ const App: React.FC = () => {
           age: nextAge,
           month: nextMonthIndex,
           loans: updatedLoans,
+          creditScore: prev.player.creditScore + (hasActiveLoans ? 1 : 0),
           investments: updatedInvestments,
           education: completedDegreeName || prev.player.education,
           educationState: newEduState,
@@ -701,6 +731,7 @@ const App: React.FC = () => {
             money: prev.player.stats.money + netIncome,
             health: Math.min(100, Math.max(0, prev.player.stats.health + healthBonus - (prev.player.age > 40 && nextMonthIndex === 0 ? 3 : 0) - (isStudyingAndWorking ? 8 : 0))),
             happiness: Math.min(100, prev.player.stats.happiness + happyBonus),
+            looks: Math.min(100, prev.player.stats.looks + politicalPrestigeBonus),
             stress: Math.max(0, Math.min(100, prev.player.stats.stress + (prev.player.job ? 2 : 0) + (hasActiveLoans ? 5 : -5) + (childrenCount * 2) + (isStudyingAndWorking ? 15 : 0)))
           }
         }
@@ -725,6 +756,14 @@ const App: React.FC = () => {
 
     if (investmentIncome > 0) {
       addLog(`🏦 PLACEMENTS : +${investmentIncome.toLocaleString()} FCFA de dividendes/loyers.`, 'positive');
+    }
+
+    if (politicalIncome > 0) {
+      addLog(`🚩 POLITIQUE : +${politicalIncome.toLocaleString()} FCFA d'indemnités.`, 'positive');
+    }
+
+    if (politicalFee > 0) {
+      addLog(`🚩 POLITIQUE : -${politicalFee.toLocaleString()} FCFA de cotisation.`, 'negative');
     }
     
     if (totalMonthlyLoanPayment > 0) {
@@ -754,32 +793,58 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
-  const takeLoan = (amount: number, duration: number) => {
-    const interestRate = 0.15;
-    const totalToRepay = amount * (1 + interestRate);
+  const takeLoan = (bankId: string, amount: number, duration: number) => {
+    const bank = gameState.banks.find(b => b.id === bankId);
+    if (!bank) return;
+
+    const monthlySalary = gameState.player.job?.salary || 0;
+    const isCDI = gameState.player.job?.isCDI || false;
+
+    if (monthlySalary < bank.minSalary) {
+      addLog(`❌ BANQUE : Salaire insuffisant pour un prêt chez ${bank.name}.`, "negative");
+      return;
+    }
+
+    if (bank.requireCDI && !isCDI) {
+      addLog(`❌ BANQUE : Un contrat CDI est requis pour emprunter chez ${bank.name}.`, "negative");
+      return;
+    }
+
+    if (gameState.player.creditScore < bank.minCreditScore) {
+      addLog(`❌ BANQUE : Ton historique de crédit est insuffisant pour ${bank.name}.`, "negative");
+      return;
+    }
+
+    const totalToRepay = amount * (1 + bank.interestRate);
     const monthlyPayment = Math.round(totalToRepay / duration);
     
+    const currentTotalMonthlyPayment = gameState.player.loans.reduce((acc, l) => acc + l.monthlyPayment, 0);
+    if (monthlyPayment + currentTotalMonthlyPayment > monthlySalary * 0.4) {
+        addLog(`❌ BANQUE : Taux d'endettement trop élevé pour ton salaire !`, "negative");
+        return;
+    }
+
     const newLoan: Loan = {
       id: Date.now().toString(),
+      bankId: bank.id,
       amount,
       remainingAmount: totalToRepay,
       monthlyPayment,
-      interestRate,
+      interestRate: bank.interestRate,
       durationMonths: duration,
       monthsRemaining: duration
     };
 
+    updateStats({ money: amount, stress: 10 });
     setGameState(prev => ({
       ...prev,
       player: {
         ...prev.player,
-        money: prev.player.stats.money + amount,
-        stats: { ...prev.player.stats, money: prev.player.stats.money + amount, stress: prev.player.stats.stress + 10 },
         loans: [...prev.player.loans, newLoan]
       }
     }));
 
-    addLog(`🏦 PRÊT ACCORDÉ : Tu as reçu ${amount.toLocaleString()} FCFA. Remboursement: ${monthlyPayment.toLocaleString()} FCFA/mois.`, 'positive');
+    addLog(`🏦 PRÊT ACCORDÉ : ${bank.name} t'a versé ${amount.toLocaleString()} FCFA.`, 'positive');
   };
 
   const enrollDegree = (degree: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification', specialty: string) => {
@@ -980,6 +1045,23 @@ const App: React.FC = () => {
       addLog(`🏥 HÔPITAL : Tu as été soigné. Frais: 150.000 FCFA. Ta santé est revenue à 50%.`, 'neutral');
     }
     
+    if (choice.actionType === 'ELECTION_WIN' && choice.office) {
+        const salary = choice.office === 'Maire' ? 2500000 : 4500000;
+        setGameState(prev => ({
+            ...prev,
+            player: {
+                ...prev.player,
+                politicalState: {
+                    ...prev.player.politicalState,
+                    rank: choice.office,
+                    salary: salary,
+                    membershipFee: 200000 // Cotisation de haut niveau
+                }
+            }
+        }));
+        addLog(`🎊 ÉLECTION : Félicitations ! Tu as été élu ${choice.office} !`, 'positive');
+    }
+
     addLog(choice.resultLog || choice.text, (choice.effect.happiness || 0) < 0 || (choice.effect.health || 0) < 0 ? 'negative' : 'positive');
     setCurrentEvent(null);
   };
@@ -1010,6 +1092,63 @@ const App: React.FC = () => {
       setGameState(prev => ({ ...prev, player: { ...prev.player, job: null }}));
       addLog("Tu as démissionné.", 'neutral');
     }
+  };
+
+  const joinParty = (partyId: string, rank: PoliticalRank) => {
+    const party = POLITICAL_PARTIES.find(p => p.id === partyId);
+    if (!party) return;
+
+    if (gameState.player.stats.smarts < party.entrySmarts) {
+       addLog(`❌ POLITIQUE : Tu n'es pas assez instruit pour rejoindre ${party.name}.`, "negative");
+       return;
+    }
+
+    const fee = rank === 'Militant' ? 5000 : 50000;
+    if (gameState.player.stats.money < fee) {
+       addLog(`❌ POLITIQUE : Pas assez d'argent pour l'adhésion.`, "negative");
+       return;
+    }
+
+    updateStats({ money: -fee });
+    setGameState(prev => ({
+      ...prev,
+      player: {
+        ...prev.player,
+        politicalState: {
+          partyId: party.id,
+          rank: rank,
+          membershipFee: fee,
+          salary: rank === 'Cadre' ? 100000 : 0
+        }
+      }
+    }));
+    addLog(`🚩 POLITIQUE : Tu es maintenant ${rank} au sein du ${party.name} !`, "positive");
+  };
+
+  const runCampaign = async (office: 'Maire' | 'Député') => {
+    const cost = office === 'Maire' ? 5000000 : 10000000;
+    if (gameState.player.stats.money < cost) {
+       addLog(`❌ CAMPAGNE : Pas assez de fonds pour la campagne (${cost.toLocaleString()} FCFA).`, "negative");
+       return;
+    }
+
+    if (!gameState.player.politicalState.partyId) {
+        addLog(`❌ CAMPAGNE : Tu dois être membre d'un parti d'abord.`, "negative");
+        return;
+    }
+
+    setLoading(true);
+    const event = await gemini.generateNarrative(gameState, 'random_event', `CAMPAGNE ÉLECTORALE : Le joueur se présente pour devenir ${office}. Coût investi: ${cost.toLocaleString()} FCFA. Il faut un choix pour gagner (WIN) et un pour perdre (FAIL).`);
+    if (event) {
+        event.choices = event.choices.map((c: any) => ({
+            ...c,
+            actionType: c.text.toLowerCase().includes('gagn') || c.text.toLowerCase().includes('succès') ? 'ELECTION_WIN' : 'FAIL',
+            office
+        }));
+        setCurrentEvent(event);
+        updateStats({ money: -cost });
+    }
+    setLoading(false);
   };
 
   const interactWithKoffi = async (action: 'conseil' | 'biere' | 'business') => {
@@ -1199,7 +1338,7 @@ const App: React.FC = () => {
                    activeTab === 'patrimoine' ? 'Banque & Patrimoine' :
                    activeTab === 'boutique' ? 'Boutique' :
                    activeTab === 'smartphone' ? 'Smartphone' :
-                   activeTab === 'smartphone_app' ? (selectedApp === 'bank' ? 'Banque Mobile' : selectedApp === 'business' ? 'Gestion Business' : 'Babi Love') : ''}
+                   activeTab === 'smartphone_app' ? (selectedApp === 'bank' ? 'Banque Mobile' : selectedApp === 'business' ? 'Gestion Business' : selectedApp === 'politics' ? 'Vie Politique' : 'Babi Love') : ''}
                 </h3>
                 <button
                   onClick={() => setActiveTab('vie')}
@@ -1419,19 +1558,29 @@ const App: React.FC = () => {
                        ))}
                      </div>
                    </div>
-                   <div className="space-y-2">
-                     <p className="text-[9px] font-black text-slate-400 uppercase px-1">Véhicules</p>
-                     <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
-                       {VEHICLES.map(v => (
-                         <button key={v.id} onClick={() => buyVehicle(v)} className="flex-none w-[220px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
-                            <div>
-                              <span className="text-sm font-bold block leading-tight">{v.name}</span>
-                              <span className="text-[8px] uppercase text-slate-400">{v.isBusiness ? 'Business Rentable' : 'Personnel'}</span>
-                            </div>
-                            <span className="text-xs font-black text-emerald-600">{v.price.toLocaleString()} FCFA</span>
-                         </button>
-                       ))}
-                     </div>
+                   <div className="space-y-6">
+                     <p className="text-[9px] font-black text-slate-400 uppercase px-1">Concessionnaires & Véhicules</p>
+
+                     {Array.from(new Set(VEHICLES.map(v => v.dealership))).map(dealer => (
+                       <div key={dealer} className="space-y-2">
+                          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-2 border-orange-500 pl-2 ml-1">{dealer}</h4>
+                          <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                            {VEHICLES.filter(v => v.dealership === dealer).map(v => (
+                              <button key={v.id} onClick={() => buyVehicle(v)} className="flex-none w-[220px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4 shadow-sm active:scale-95 transition-all">
+                                 <div>
+                                   <p className="text-[8px] font-black text-slate-400 uppercase mb-1">{v.brand}</p>
+                                   <span className="text-sm font-black block leading-tight">{v.name}</span>
+                                   <span className="text-[8px] uppercase text-orange-500 font-bold">Prestige: +{v.prestige}</span>
+                                 </div>
+                                 <div className="w-full flex justify-between items-center border-t border-slate-50 pt-2">
+                                   <span className="text-[8px] uppercase text-slate-400 font-bold">{v.isBusiness ? 'Business' : 'Privé'}</span>
+                                   <span className="text-xs font-black text-emerald-600">{v.price.toLocaleString()} <small>FCFA</small></span>
+                                 </div>
+                              </button>
+                            ))}
+                          </div>
+                       </div>
+                     ))}
                    </div>
                 </div>
               </div>
@@ -1456,6 +1605,10 @@ const App: React.FC = () => {
                         <div className="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-heart text-white text-xl"></i></div>
                         <span className="text-[9px] font-bold text-white uppercase">Rencontres</span>
                      </button>
+                     <button onClick={() => { setSelectedApp('politics'); setActiveTab('smartphone_app'); }} className="flex flex-col items-center gap-2">
+                        <div className="w-14 h-14 bg-orange-600 rounded-2xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-flag text-white text-xl"></i></div>
+                        <span className="text-[9px] font-bold text-white uppercase">Politique</span>
+                     </button>
                   </div>
                   <div className="mt-auto flex justify-center pb-4">
                      <button onClick={() => setActiveTab('vie')} className="w-12 h-1 bg-white/20 rounded-full"></button>
@@ -1467,27 +1620,141 @@ const App: React.FC = () => {
                <div className="absolute inset-0 bg-white p-6 flex flex-col overflow-hidden">
                   <div className="flex justify-between items-center mb-6">
                     <button onClick={() => setActiveTab('smartphone')} className="text-slate-400"><i className="fa-solid fa-chevron-left"></i></button>
-                    <h3 className="text-sm font-black uppercase tracking-widest">{selectedApp === 'bank' ? 'BABI BANK' : selectedApp === 'business' ? 'BABI BIZ' : 'BABI LOVE'}</h3>
+                    <h3 className="text-sm font-black uppercase tracking-widest">{selectedApp === 'bank' ? 'BABI BANK' : selectedApp === 'business' ? 'BABI BIZ' : selectedApp === 'politics' ? 'BABI POLITIS' : 'BABI LOVE'}</h3>
                     <div className="w-4"></div>
                   </div>
 
                   <div className="flex-1 overflow-y-auto">
+                    {selectedApp === 'politics' && (
+                       <div className="space-y-6">
+                          {!gameState.player.politicalState.partyId ? (
+                            <div className="space-y-4">
+                               <div className="p-6 bg-orange-50 rounded-3xl text-center">
+                                  <i className="fa-solid fa-bullhorn text-orange-600 text-3xl mb-2"></i>
+                                  <p className="text-sm font-bold text-orange-900 italic">"Engage-toi pour construire le pays !"</p>
+                               </div>
+                               <p className="text-[10px] font-black text-slate-400 uppercase px-1">Choisir un parti</p>
+                               <div className="space-y-3">
+                                  {POLITICAL_PARTIES.map(party => (
+                                    <div key={party.id} className="p-4 bg-white border-2 border-slate-100 rounded-2xl flex justify-between items-center shadow-sm">
+                                       <div>
+                                          <p className="font-black text-slate-900">{party.name}</p>
+                                          <p className="text-[9px] text-slate-400 font-bold uppercase">{party.ideology}</p>
+                                          <p className="text-[8px] text-orange-600 font-black uppercase mt-1">Smart Min: {party.entrySmarts}</p>
+                                       </div>
+                                       <div className="flex flex-col gap-1">
+                                          <button onClick={() => joinParty(party.id, 'Militant')} className="text-[8px] font-black bg-slate-100 text-slate-600 px-3 py-1 rounded-lg uppercase">Militant (5k)</button>
+                                          <button onClick={() => joinParty(party.id, 'Cadre')} className="text-[8px] font-black bg-orange-600 text-white px-3 py-1 rounded-lg uppercase">Cadre (50k)</button>
+                                       </div>
+                                    </div>
+                                  ))}
+                               </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-6">
+                               <div className={`p-6 ${POLITICAL_PARTIES.find(p => p.id === gameState.player.politicalState.partyId)?.color} rounded-3xl text-white`}>
+                                  <p className="text-[10px] font-bold uppercase opacity-70 mb-1">{POLITICAL_PARTIES.find(p => p.id === gameState.player.politicalState.partyId)?.name}</p>
+                                  <p className="text-2xl font-black uppercase">{gameState.player.politicalState.rank}</p>
+                                  {gameState.player.politicalState.salary > 0 && <p className="text-xs font-bold mt-2">Revenus: +{gameState.player.politicalState.salary.toLocaleString()} FCFA/mois</p>}
+                               </div>
+
+                               <div className="grid grid-cols-2 gap-3">
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Cotisation</p>
+                                     <p className="text-sm font-black">-{gameState.player.politicalState.membershipFee.toLocaleString()} <small>FCFA/m</small></p>
+                                  </div>
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Prestige</p>
+                                     <p className="text-sm font-black">+{gameState.player.politicalState.rank === 'Maire' ? 50 : gameState.player.politicalState.rank === 'Député' ? 70 : 10}</p>
+                                  </div>
+                               </div>
+
+                               {(gameState.player.politicalState.rank === 'Cadre' || gameState.player.politicalState.rank === 'Maire' || gameState.player.politicalState.rank === 'Député') && (
+                                 <div className="space-y-3">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase px-1">Élections & Campagnes</p>
+                                    <div className="space-y-3">
+                                       <button onClick={() => runCampaign('Maire')} className="w-full bg-blue-600 text-white p-4 rounded-2xl flex justify-between items-center shadow-lg active:scale-95 transition-all">
+                                          <div className="text-left">
+                                             <p className="font-black text-sm uppercase">Candidat à la Mairie</p>
+                                             <p className="text-[9px] font-bold opacity-80 uppercase">Coût: 5.000.000 FCFA</p>
+                                          </div>
+                                          <i className="fa-solid fa-landmark text-xl opacity-50"></i>
+                                       </button>
+                                       <button onClick={() => runCampaign('Député')} className="w-full bg-emerald-600 text-white p-4 rounded-2xl flex justify-between items-center shadow-lg active:scale-95 transition-all">
+                                          <div className="text-left">
+                                             <p className="font-black text-sm uppercase">Candidat aux Législatives</p>
+                                             <p className="text-[9px] font-bold opacity-80 uppercase">Coût: 10.000.000 FCFA</p>
+                                          </div>
+                                          <i className="fa-solid fa-gavel text-xl opacity-50"></i>
+                                       </button>
+                                    </div>
+                                 </div>
+                               )}
+
+                               <button
+                                 onClick={() => setGameState(p => ({ ...p, player: { ...p.player, politicalState: { partyId: null, rank: null, membershipFee: 0, salary: 0 } } }))}
+                                 className="w-full text-[9px] font-black text-rose-500 uppercase py-4 border-2 border-rose-100 rounded-2xl hover:bg-rose-50 transition-all"
+                               >
+                                 Quitter le Parti
+                               </button>
+                            </div>
+                          )}
+                       </div>
+                    )}
                     {selectedApp === 'bank' && (
-                      <div className="space-y-4">
-                         <div className="p-6 bg-slate-900 rounded-3xl text-white">
-                            <p className="text-[10px] font-bold uppercase opacity-50 mb-1">Solde Total</p>
-                            <p className="text-2xl font-black">{gameState.player.stats.money.toLocaleString()} FCFA</p>
+                      <div className="space-y-6">
+                         <div className="p-6 bg-slate-900 rounded-3xl text-white flex justify-between items-center">
+                            <div>
+                              <p className="text-[10px] font-bold uppercase opacity-50 mb-1">Solde Total</p>
+                              <p className="text-2xl font-black">{gameState.player.stats.money.toLocaleString()} FCFA</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-bold uppercase opacity-50 mb-1">Score Crédit</p>
+                              <p className="text-xl font-black text-orange-500">{gameState.player.creditScore}</p>
+                            </div>
                          </div>
+
+                         <div className="space-y-3">
+                            <p className="text-[10px] font-black text-slate-400 uppercase px-1">Demander un prêt</p>
+                            <div className="space-y-3">
+                               {gameState.banks.map(bank => (
+                                 <div key={bank.id} className="p-4 bg-white border-2 border-slate-100 rounded-2xl space-y-3">
+                                    <div className="flex justify-between items-start">
+                                       <div>
+                                          <p className="font-black text-slate-900">{bank.name}</p>
+                                          <p className="text-[9px] text-slate-400 font-bold uppercase">Intérêt: {(bank.interestRate * 100).toFixed(0)}% • Min Salaire: {bank.minSalary.toLocaleString()}</p>
+                                          {bank.requireCDI && <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-black uppercase">CDI Requis</span>}
+                                       </div>
+                                       <div className="text-right">
+                                          <p className="text-[8px] font-black text-slate-400 uppercase">Score Min</p>
+                                          <p className="text-xs font-black">{bank.minCreditScore}</p>
+                                       </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                       <button onClick={() => takeLoan(bank.id, 500000, 12)} className="text-[9px] font-black bg-slate-900 text-white py-2 rounded-xl active:scale-95 transition-all">500k (12 mois)</button>
+                                       <button onClick={() => takeLoan(bank.id, 2000000, 24)} className="text-[9px] font-black bg-slate-900 text-white py-2 rounded-xl active:scale-95 transition-all">2M (24 mois)</button>
+                                    </div>
+                                 </div>
+                               ))}
+                            </div>
+                         </div>
+
                          <div className="space-y-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase px-1">Tes Emprunts</p>
-                            <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                            <p className="text-[10px] font-black text-slate-400 uppercase px-1">Emprunts en cours</p>
+                            <div className="space-y-2 px-1">
                               {gameState.player.loans.map(l => (
-                                <div key={l.id} className="flex-none w-[180px] p-3 bg-slate-50 rounded-2xl flex justify-between">
-                                   <span className="text-xs font-bold">{l.remainingAmount.toLocaleString()} FCFA</span>
-                                   <span className="text-[10px] text-orange-600 font-black">{l.monthsRemaining} mois</span>
+                                <div key={l.id} className="p-3 bg-slate-50 rounded-2xl flex justify-between items-center">
+                                   <div>
+                                      <p className="text-[9px] font-black text-slate-400 uppercase">{gameState.banks.find(b => b.id === l.bankId)?.name || 'Banque'}</p>
+                                      <p className="text-xs font-bold">{l.remainingAmount.toLocaleString()} FCFA restant</p>
+                                   </div>
+                                   <div className="text-right">
+                                      <p className="text-[9px] text-orange-600 font-black">{l.monthsRemaining} mois</p>
+                                      <p className="text-[9px] text-slate-400 font-bold">{l.monthlyPayment.toLocaleString()}/m</p>
+                                   </div>
                                 </div>
                               ))}
-                              {gameState.player.loans.length === 0 && <p className="text-[10px] text-slate-400 italic">Aucun prêt en cours.</p>}
+                              {gameState.player.loans.length === 0 && <p className="text-[10px] text-slate-400 italic">Aucun prêt actif.</p>}
                             </div>
                          </div>
                       </div>
@@ -1740,16 +2007,13 @@ const App: React.FC = () => {
                 {/* Banque */}
                 <div className="space-y-3">
                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Services Bancaires</p>
-                   <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
-                    <button onClick={() => takeLoan(200000, 10)} className="flex-none w-[180px] p-4 bg-blue-50 border-2 border-blue-100 rounded-2xl text-left">
-                      <p className="text-[10px] font-black text-blue-600 uppercase mb-1">Prêt Consom.</p>
-                      <p className="text-xs font-black">200.000 FCFA</p>
-                    </button>
-                    <button onClick={() => takeLoan(1000000, 24)} className="flex-none w-[180px] p-4 bg-indigo-50 border-2 border-indigo-100 rounded-2xl text-left">
-                      <p className="text-[10px] font-black text-indigo-600 uppercase mb-1">Prêt Invest.</p>
-                      <p className="text-xs font-black">1.000.000 FCFA</p>
-                    </button>
-                  </div>
+                   <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl flex justify-between items-center shadow-sm mx-1">
+                      <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Score de Crédit</p>
+                        <p className="text-xl font-black text-orange-600">{gameState.player.creditScore}</p>
+                      </div>
+                      <button onClick={() => { setSelectedApp('bank'); setActiveTab('smartphone_app'); }} className="text-[10px] font-black bg-slate-900 text-white px-4 py-2 rounded-xl">Ouvrir l'App Banque</button>
+                   </div>
                 </div>
 
               </div>

@@ -1,5 +1,6 @@
 import Groq from "groq-sdk";
 import { GameState } from "../types";
+import { POLITICAL_PARTIES } from "../App";
 
 // On garde le nom GeminiService pour que l'importation dans App.tsx fonctionne sans erreur
 export class GeminiService {
@@ -32,6 +33,8 @@ export class GeminiService {
     const children = state.player.relations.filter(r => r.type === 'Enfant');
     const businesses = state.player.businesses.map(b => `${b.name} (${b.type} à ${b.location}, Niv.${b.level})`).join(', ');
     const investments = state.player.investments.map(inv => `${inv.name} (${inv.currentValue} FCFA)`).join(', ');
+    const partyName = POLITICAL_PARTIES.find(p => p.id === state.player.politicalState.partyId)?.name || state.player.politicalState.partyId;
+    const politicalStatus = state.player.politicalState.rank ? `${state.player.politicalState.rank} au sein du parti ${partyName}` : "Pas d'engagement politique";
     const edu = state.player.educationState;
     const currentEduContext = edu.currentDegree ? `Étudie actuellement en ${edu.currentDegree} (${edu.specialty}), Mois ${edu.monthsCompleted + 1}/6.` : `Diplôme le plus élevé: ${state.player.education}.`;
 
@@ -45,7 +48,8 @@ export class GeminiService {
       Patrimoine: ${state.player.assets.properties.length} maison(s), ${state.player.assets.vehicles.length} véhicule(s).
       Business: ${businesses || 'Aucun'}.
       Placements: ${investments || 'Aucun'}.
-      Dette Totale: ${totalDebt} FCFA. Remboursement mensuel: ${monthlyDebtPayment} FCFA.
+      Engagement Politique: ${politicalStatus}.
+      Dette Totale: ${totalDebt} FCFA. Remboursement mensuel: ${monthlyDebtPayment} FCFA. Score Crédit: ${state.player.creditScore}.
       Téléphone: ${hasPhone ? 'Possède un smartphone' : 'Pas de téléphone'}.
       Type d'événement: ${type}. ${extra || ''}
 
