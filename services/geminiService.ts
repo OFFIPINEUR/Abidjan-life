@@ -29,6 +29,7 @@ export class GeminiService {
     const monthlyDebtPayment = state.player.loans.reduce((acc, l) => acc + l.monthlyPayment, 0);
     const hasPhone = state.player.inventory.some(item => item.type === 'Phone');
     const spouse = state.player.relations.find(r => r.isSpouse);
+    const mistresses = state.player.relations.filter(r => r.isMistress);
     const children = state.player.relations.filter(r => r.type === 'Enfant');
     const businesses = state.player.businesses.map(b => b.name).join(', ');
     const edu = state.player.educationState;
@@ -40,7 +41,7 @@ export class GeminiService {
       Statut: ${state.player.job ? state.player.job.title + " chez " + state.player.job.company.name : "Sans emploi"}.
       Éducation: ${currentEduContext}
       Stats: Santé ${state.player.stats.health}, Bonheur ${state.player.stats.happiness}, Smarts ${state.player.stats.smarts}, Argent ${state.player.stats.money} FCFA.
-      Famille: ${spouse ? 'Marié(e) à ' + spouse.name : 'Célibataire'}, ${children.length} enfant(s).
+      Famille: ${spouse ? 'Marié(e) à ' + spouse.name : 'Célibataire'}${mistresses.length > 0 ? ', ' + mistresses.length + ' maîtresse(s)/amant(s)' : ''}, ${children.length} enfant(s).
       Patrimoine: ${state.player.assets.properties.length} maison(s), ${state.player.assets.vehicles.length} véhicule(s).
       Business: ${businesses || 'Aucun'}.
       Dette Totale: ${totalDebt} FCFA. Remboursement mensuel: ${monthlyDebtPayment} FCFA.
@@ -54,7 +55,11 @@ export class GeminiService {
       4. Si 'shopping': Propose des articles (cadeaux, meubles, tel) à Abidjan. Boostent Looks, Santé ou Bonheur.
       5. Si 'interview': Simule une question cruciale liée au poste de ${state.player.job?.title || 'le poste visé'}. Un choix doit avoir actionType: 'HIRE', les autres 'FAIL'.
       6. Si 'dating' ou 'social': Si c'est pour draguer, adapte selon le genre du joueur (${state.player.gender}) et de l'interlocuteur. Propose des choix pour séduire ou renforcer le lien.
-      7. Si 'marriage': Organisation du mariage ou demande. Coûts élevés (dot).
+         - Si le joueur est marié et interagit avec une maîtresse (isMistress), souligne le côté secret et risqué.
+         - Si le joueur est marié, son conjoint peut parfois avoir des doutes ou découvrir l'affaire, ce qui crée des tensions ou mène au divorce.
+         - Actions pour amis garçons (maquis, foot, business): crée des dialogues de camaraderie virile abidjanaise.
+      7. Si 'marriage' ou 'dating' (demande en couple): Demande officielle. Pour le mariage, mentionne la dot et la famille.
+      8. Divorce/Séparation: Utilise des raisons réalistes d'Abidjan (infidélité, manque d'argent, belle-famille envahissante, incompatibilité).
       8. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
       9. Si 'child_event': Événement lié aux enfants (école, maladie, joie).
       10. Si 'random_event': Incident de la vie quotidienne à Babi.
