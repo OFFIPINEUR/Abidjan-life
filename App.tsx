@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { GameState, Stats, Job, LogEntry, Relationship, Property, Company, Loan, Business } from './types';
+import { GameState, Stats, Job, LogEntry, Relationship, Property, Company, Loan, Business, Investment, BusinessType } from './types';
 import { GeminiService } from './services/geminiService';
 
 const INITIAL_STATS: Stats = {
@@ -117,6 +117,18 @@ const VEHICLES = [
   { id: 'v4', name: "Sotra (Mini bus)", price: 15000000, prestige: 20, isBusiness: true }
 ];
 
+const BUSINESS_CONFIG: Record<string, { baseCost: number, baseRevenue: number }> = {
+  'Kbine': { baseCost: 100000, baseRevenue: 15000 },
+  'Kiosque': { baseCost: 300000, baseRevenue: 40000 },
+  'Boutique': { baseCost: 600000, baseRevenue: 80000 },
+  'Maquis': { baseCost: 1200000, baseRevenue: 180000 },
+  'Garbadrome': { baseCost: 800000, baseRevenue: 100000 },
+  'Lavage Auto': { baseCost: 1500000, baseRevenue: 220000 },
+  'Pressing': { baseCost: 3000000, baseRevenue: 450000 },
+  'Gbaka': { baseCost: 2000000, baseRevenue: 300000 },
+  'Transport': { baseCost: 2500000, baseRevenue: 350000 }
+};
+
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [gameState, setGameState] = useState<GameState>({
@@ -144,12 +156,15 @@ const App: React.FC = () => {
       },
       logs: [],
       inventory: [],
-      businesses: []
-    }
+      businesses: [],
+      investments: []
+    },
+    marketBusinesses: []
   });
 
   const [activeTab, setActiveTab] = useState<'vie' | 'travail' | 'social' | 'patrimoine' | 'activites' | 'boutique' | 'smartphone' | 'smartphone_app'>('vie');
   const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | null>(null);
+  const [businessTab, setBusinessTab] = useState<'mine' | 'launch' | 'market' | 'invest'>('mine');
   const [currentEvent, setCurrentEvent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
@@ -168,6 +183,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!gameState.isRegistered || showSplash) return;
+    refreshMarket();
 
     const interval = setInterval(() => {
       setGameState(prev => ({
@@ -318,12 +334,16 @@ const App: React.FC = () => {
     addLog(`🏠 LOGEMENT : Tu as emménagé à ${neighborhood.name} (${type === 'OWN' ? 'Propriétaire' : 'Locataire'}).`, "positive");
   };
 
-  const launchBusiness = (type: 'Boutique' | 'Maquis' | 'Transport') => {
-    const costs = { 'Boutique': 500000, 'Maquis': 1000000, 'Transport': 2000000 };
-    const cost = costs[type];
+  const launchBusiness = (type: any, neighborhoodName: string) => {
+    const neighborhood = NEIGHBORHOODS.find(n => n.name === neighborhoodName) || NEIGHBORHOODS[0];
+    const config = BUSINESS_CONFIG[type];
+
+    const multiplier = 1 + (neighborhood.prestige / 100);
+    const cost = Math.round(config.baseCost * multiplier);
+    const revenue = Math.round(config.baseRevenue * multiplier);
 
     if (gameState.player.stats.money < cost) {
-      addLog(`Pas assez d'argent pour lancer ce business (${cost.toLocaleString()} FCFA nécessaires)`, "negative");
+      addLog(`Pas assez d'argent pour lancer ce business à ${neighborhoodName} (${cost.toLocaleString()} FCFA nécessaires)`, "negative");
       return;
     }
 
@@ -331,8 +351,10 @@ const App: React.FC = () => {
       id: Date.now().toString(),
       name: `${type} de ${gameState.player.name.split(' ')[0]}`,
       type: type,
+      location: neighborhoodName,
       investment: cost,
-      monthlyRevenue: Math.round(cost * 0.08) // 8% de rendement mensuel
+      monthlyRevenue: revenue,
+      level: 1
     };
 
     setGameState(prev => ({
@@ -343,7 +365,115 @@ const App: React.FC = () => {
         businesses: [...prev.player.businesses, newBusiness]
       }
     }));
-    addLog(`🚀 BUSINESS : Tu as lancé ton propre business de ${type} !`, "positive");
+    addLog(`🚀 BUSINESS : Tu as lancé ton propre business de ${type} à ${neighborhoodName} !`, "positive");
+  };
+
+  const refreshMarket = () => {
+    const types: any[] = ['Kbine', 'Kiosque', 'Boutique', 'Maquis', 'Garbadrome', 'Lavage Auto', 'Pressing', 'Gbaka'];
+    const names = ["Chez l'Oncle", "Espace Pro", "Le Relais", "Babi Biz", "Dja Foule", "Coin Chic", "Étoile de Babi"];
+
+    const newList: Business[] = [];
+    for (let i = 0; i < 4; i++) {
+      const type = types[Math.floor(Math.random() * types.length)];
+      const neighborhood = NEIGHBORHOODS[Math.floor(Math.random() * NEIGHBORHOODS.length)];
+      const config = BUSINESS_CONFIG[type];
+      const multiplier = 0.8 + (Math.random() * 0.5) + (neighborhood.prestige / 100);
+      const cost = Math.round(config.baseCost * multiplier);
+      const revenue = Math.round(config.baseRevenue * (0.9 + Math.random() * 0.3) * (1 + neighborhood.prestige / 100));
+
+      newList.push({
+        id: `market-${Date.now()}-${i}`,
+        name: `${type} ${names[Math.floor(Math.random() * names.length)]}`,
+        type,
+        location: neighborhood.name,
+        investment: cost,
+        monthlyRevenue: revenue,
+        level: Math.floor(Math.random() * 3) + 1
+      });
+    }
+    setGameState(prev => ({ ...prev, marketBusinesses: newList }));
+  };
+
+  const buyMarketBusiness = (business: Business) => {
+    if (gameState.player.stats.money < business.investment) {
+      addLog("Pas assez d'argent pour racheter ce business !", "negative");
+      return;
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      player: {
+        ...prev.player,
+        stats: { ...prev.player.stats, money: prev.player.stats.money - business.investment, stress: prev.player.stats.stress + 10 },
+        businesses: [...prev.player.businesses, { ...business, id: Date.now().toString() }]
+      },
+      marketBusinesses: prev.marketBusinesses.filter(b => b.id !== business.id)
+    }));
+    addLog(`💼 RACHAT : Tu as racheté ${business.name} à ${business.location} !`, "positive");
+  };
+
+  const expandBusiness = (businessId: string) => {
+    const business = gameState.player.businesses.find(b => b.id === businessId);
+    if (!business) return;
+
+    const expansionCost = Math.round(business.investment * 0.5 * business.level);
+    if (gameState.player.stats.money < expansionCost) {
+      addLog(`Pas assez d'argent pour agrandir ${business.name} (${expansionCost.toLocaleString()} FCFA requis)`, "negative");
+      return;
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      player: {
+        ...prev.player,
+        stats: { ...prev.player.stats, money: prev.player.stats.money - expansionCost, stress: prev.player.stats.stress + 5 },
+        businesses: prev.player.businesses.map(b =>
+          b.id === businessId
+            ? { ...b, level: b.level + 1, monthlyRevenue: Math.round(b.monthlyRevenue * 1.4) }
+            : b
+        )
+      }
+    }));
+    addLog(`📈 EXPANSION : ${business.name} est passé au niveau ${business.level + 1} !`, "positive");
+  };
+
+  const investMoney = (type: 'SAVINGS' | 'STOCK' | 'REAL_ESTATE', amount: number) => {
+    if (gameState.player.stats.money < amount) {
+      addLog("Pas assez d'argent pour cet investissement !", "negative");
+      return;
+    }
+
+    let yieldRate = 0;
+    let name = "";
+    if (type === 'SAVINGS') {
+      yieldRate = 0.005; // 0.5% par mois
+      name = "Compte Épargne";
+    } else if (type === 'STOCK') {
+      yieldRate = 0.015; // 1.5% en moyenne
+      name = "Portefeuille Action";
+    } else {
+      yieldRate = 0.008; // 0.8% loyer
+      name = "Investissement Immobilier";
+    }
+
+    const newInvestment: Investment = {
+      id: Date.now().toString(),
+      name,
+      type,
+      initialAmount: amount,
+      currentValue: amount,
+      monthlyYield: yieldRate
+    };
+
+    setGameState(prev => ({
+      ...prev,
+      player: {
+        ...prev.player,
+        stats: { ...prev.player.stats, money: prev.player.stats.money - amount },
+        investments: [...prev.player.investments, newInvestment]
+      }
+    }));
+    addLog(`🏦 INVESTISSEMENT : Tu as placé ${amount.toLocaleString()} FCFA en ${name}.`, "positive");
   };
 
   const buyItem = (item: any) => {
@@ -492,6 +622,7 @@ const App: React.FC = () => {
     const hasActiveLoans = gameState.player.loans.length > 0;
     
     const businessIncome = gameState.player.businesses.reduce((acc, b) => acc + b.monthlyRevenue, 0);
+    const investmentIncome = gameState.player.investments.reduce((acc, inv) => acc + Math.round(inv.currentValue * inv.monthlyYield), 0);
     const childrenCount = gameState.player.relations.filter(r => r.type === 'Enfant').length;
     const totalChildSupport = gameState.player.relations.reduce((acc, r) => acc + (r.childSupport || 0), 0);
     const childExpenses = childrenCount * 30000;
@@ -525,7 +656,15 @@ const App: React.FC = () => {
         remainingAmount: l.remainingAmount - l.monthlyPayment
       })).filter(l => l.monthsRemaining > 0);
 
-      const netIncome = monthlySalary + businessIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport;
+      const netIncome = monthlySalary + businessIncome + investmentIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport;
+
+      const updatedInvestments = prev.player.investments.map(inv => {
+        if (inv.type === 'STOCK') {
+           const fluctuation = (Math.random() * 0.07) - 0.02;
+           return { ...inv, currentValue: Math.round(inv.currentValue * (1 + fluctuation)) };
+        }
+        return inv;
+      });
 
       // Bonus santé/bonheur des meubles
       const healthBonus = prev.player.assets.properties.reduce((acc, p) => acc + p.furnishings.reduce((fAcc, f) => fAcc + f.healthBonus, 0), 0) / 10;
@@ -554,6 +693,7 @@ const App: React.FC = () => {
           age: nextAge,
           month: nextMonthIndex,
           loans: updatedLoans,
+          investments: updatedInvestments,
           education: completedDegreeName || prev.player.education,
           educationState: newEduState,
           stats: {
@@ -582,6 +722,10 @@ const App: React.FC = () => {
     if (businessIncome > 0) {
       addLog(`📈 BUSINESS : +${businessIncome.toLocaleString()} FCFA de revenus ce mois.`, 'positive');
     }
+
+    if (investmentIncome > 0) {
+      addLog(`🏦 PLACEMENTS : +${investmentIncome.toLocaleString()} FCFA de dividendes/loyers.`, 'positive');
+    }
     
     if (totalMonthlyLoanPayment > 0) {
       addLog(`📉 PRÉLÈVEMENT BANCAIRE : -${totalMonthlyLoanPayment.toLocaleString()} FCFA (Remboursement prêt)`, 'negative');
@@ -599,6 +743,7 @@ const App: React.FC = () => {
       addLog(`🍼 PENSION : -${totalChildSupport.toLocaleString()} FCFA de pension alimentaire.`, 'negative');
     }
 
+    refreshMarket();
     if (event) setCurrentEvent(event);
 
     // Vérification hospitalisation
@@ -1350,23 +1495,159 @@ const App: React.FC = () => {
 
                     {selectedApp === 'business' && (
                       <div className="space-y-4">
-                         <div className="flex flex-row gap-2 mb-4 overflow-x-auto no-scrollbar">
-                            <button onClick={() => launchBusiness('Boutique')} className="flex-none w-[160px] p-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase">Lancer Boutique (500k)</button>
-                            <button onClick={() => launchBusiness('Maquis')} className="flex-none w-[160px] p-3 bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase">Ouvrir Maquis (1M)</button>
-                            <button onClick={() => launchBusiness('Transport')} className="flex-none w-[160px] p-3 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase">Transport/Gbaka (2M)</button>
+                         <div className="flex flex-row gap-2 mb-4 overflow-x-auto no-scrollbar border-b border-slate-100 pb-2">
+                            {[
+                              {id: 'mine', label: 'Mes Biz'},
+                              {id: 'launch', label: 'Lancer'},
+                              {id: 'market', label: 'Racheter'},
+                              {id: 'invest', label: 'Placements'}
+                            ].map(t => (
+                              <button
+                                key={t.id}
+                                onClick={() => setBusinessTab(t.id as any)}
+                                className={`flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${businessTab === t.id ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}
+                              >
+                                {t.label}
+                              </button>
+                            ))}
                          </div>
-                         <div className="space-y-2">
-                           <p className="text-[10px] font-black text-slate-400 uppercase px-1">Tes Actifs</p>
-                           <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
-                             {gameState.player.businesses.map(b => (
-                               <div key={b.id} className="flex-none w-[200px] p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
-                                  <p className="font-black text-blue-900 truncate">{b.name}</p>
-                                  <p className="text-xs font-bold text-blue-600">Revenus: {b.monthlyRevenue.toLocaleString()} FCFA</p>
-                               </div>
-                             ))}
+
+                         {businessTab === 'mine' && (
+                           <div className="space-y-4">
+                              <p className="text-[10px] font-black text-slate-400 uppercase px-1">Tes Actifs ({gameState.player.businesses.length})</p>
+                              <div className="space-y-3">
+                                {gameState.player.businesses.map(b => (
+                                  <div key={b.id} className="p-4 bg-white rounded-2xl border-2 border-slate-100 flex justify-between items-center shadow-sm">
+                                     <div>
+                                        <p className="font-black text-slate-900 leading-tight">{b.name}</p>
+                                        <p className="text-[9px] text-slate-400 uppercase font-bold">{b.type} • {b.location} • Niv.{b.level}</p>
+                                        <p className="text-xs font-black text-emerald-600 mt-1">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
+                                     </div>
+                                     <button
+                                      onClick={() => expandBusiness(b.id)}
+                                      className="flex flex-col items-center bg-blue-50 text-blue-600 px-3 py-2 rounded-xl active:scale-90 transition-all group"
+                                     >
+                                       <i className="fa-solid fa-arrow-up-right-dots text-xs"></i>
+                                       <span className="text-[7px] font-black mt-1 uppercase">{(Math.round(b.investment * 0.5 * b.level)).toLocaleString()}</span>
+                                     </button>
+                                  </div>
+                                ))}
+                                {gameState.player.businesses.length === 0 && <p className="text-center text-slate-400 py-10 italic text-[10px] uppercase font-bold">Aucun business actif.</p>}
+                              </div>
                            </div>
-                         </div>
-                         {gameState.player.businesses.length === 0 && <p className="text-center text-slate-400 py-10 italic text-[10px] uppercase font-bold">Aucun business actif.</p>}
+                         )}
+
+                         {businessTab === 'launch' && (
+                           <div className="space-y-6">
+                              <div className="space-y-4">
+                                <p className="text-[10px] font-black text-slate-400 uppercase px-1">Choisir un type de business</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                  {Object.keys(BUSINESS_CONFIG).map(type => (
+                                    <div key={type} className="p-4 bg-slate-50 rounded-2xl space-y-3 border border-slate-100">
+                                       <p className="font-black text-xs text-slate-900">{type}</p>
+                                       <select
+                                        className="w-full bg-white border-none p-2 rounded-lg text-[9px] font-black uppercase"
+                                        onChange={(e) => {
+                                          if (e.target.value) {
+                                            launchBusiness(type, e.target.value);
+                                            setBusinessTab('mine');
+                                          }
+                                        }}
+                                        defaultValue=""
+                                       >
+                                         <option value="" disabled>Quartier ?</option>
+                                         {NEIGHBORHOODS.map(n => (
+                                           <option key={n.name} value={n.name}>{n.name}</option>
+                                         ))}
+                                       </select>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                           </div>
+                         )}
+
+                         {businessTab === 'market' && (
+                           <div className="space-y-4">
+                              <div className="flex justify-between items-center px-1">
+                                <p className="text-[10px] font-black text-slate-400 uppercase">Opportunités ce mois</p>
+                                <span className="text-[8px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-black uppercase">Nouveau</span>
+                              </div>
+                              <div className="space-y-3">
+                                {gameState.marketBusinesses.map(b => (
+                                  <div key={b.id} className="p-4 bg-white border-2 border-orange-100 rounded-2xl flex justify-between items-center shadow-sm">
+                                     <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <p className="font-black text-slate-900 truncate max-w-[150px]">{b.name}</p>
+                                          <span className="text-[8px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase">Niv.{b.level}</span>
+                                        </div>
+                                        <p className="text-[9px] text-slate-400 uppercase font-bold">{b.location}</p>
+                                        <p className="text-xs font-black text-emerald-600 mt-1">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
+                                     </div>
+                                     <button
+                                      onClick={() => buyMarketBusiness(b)}
+                                      className="bg-orange-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase active:scale-95 transition-all"
+                                     >
+                                       {b.investment.toLocaleString()}
+                                     </button>
+                                  </div>
+                                ))}
+                              </div>
+                           </div>
+                         )}
+
+                         {businessTab === 'invest' && (
+                            <div className="space-y-6">
+                               <p className="text-[10px] font-black text-slate-400 uppercase px-1">Placements Financiers</p>
+                               <div className="space-y-3">
+                                  {[
+                                    {type: 'SAVINGS', label: 'Compte Épargne', icon: 'fa-piggy-bank', desc: 'Sûr, intérêts 0.5%/mois', color: 'bg-emerald-50 text-emerald-600'},
+                                    {type: 'STOCK', label: 'Bourse Abidjan', icon: 'fa-chart-line', desc: 'Risqué, ~1.5%/mois', color: 'bg-blue-50 text-blue-600'},
+                                    {type: 'REAL_ESTATE', label: 'Immobilier Locatif', icon: 'fa-building', desc: 'Stable, loyers ~0.8%/mois', color: 'bg-indigo-50 text-indigo-600'}
+                                  ].map(inv => (
+                                    <div key={inv.type} className="p-4 bg-white rounded-2xl border-2 border-slate-100 space-y-3 shadow-sm">
+                                       <div className="flex items-center gap-3">
+                                          <div className={`w-10 h-10 ${inv.color} rounded-xl flex items-center justify-center`}><i className={`fa-solid ${inv.icon}`}></i></div>
+                                          <div>
+                                             <p className="font-black text-slate-900 text-sm">{inv.label}</p>
+                                             <p className="text-[9px] text-slate-400 font-bold uppercase">{inv.desc}</p>
+                                          </div>
+                                       </div>
+                                       <div className="flex gap-2">
+                                          {[100000, 500000, 1000000].map(amt => (
+                                            <button
+                                              key={amt}
+                                              onClick={() => investMoney(inv.type as any, amt)}
+                                              className="flex-1 bg-slate-50 hover:bg-slate-100 py-2 rounded-lg text-[9px] font-black text-slate-600 transition-all active:scale-95"
+                                            >
+                                              {amt >= 1000000 ? (amt/1000000)+'M' : (amt/1000)+'k'}
+                                            </button>
+                                          ))}
+                                       </div>
+                                    </div>
+                                  ))}
+                               </div>
+
+                               {gameState.player.investments.length > 0 && (
+                                 <div className="space-y-3">
+                                   <p className="text-[10px] font-black text-slate-400 uppercase px-1">Tes Placements Actifs</p>
+                                   <div className="space-y-2">
+                                     {gameState.player.investments.map(inv => (
+                                       <div key={inv.id} className="p-3 bg-slate-900 rounded-xl text-white flex justify-between items-center">
+                                          <div>
+                                             <p className="text-[10px] font-black uppercase opacity-60">{inv.name}</p>
+                                             <p className="text-xs font-bold">{inv.currentValue.toLocaleString()} FCFA</p>
+                                          </div>
+                                          <div className="text-right">
+                                             <p className="text-[8px] font-black text-emerald-400 uppercase">+{Math.round(inv.currentValue * inv.monthlyYield).toLocaleString()} FCFA/m</p>
+                                          </div>
+                                       </div>
+                                     ))}
+                                   </div>
+                                 </div>
+                               )}
+                            </div>
+                         )}
                       </div>
                     )}
 
@@ -1427,7 +1708,7 @@ const App: React.FC = () => {
                        <div key={b.id} className="flex-none w-[240px] p-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl flex flex-col gap-2">
                           <div>
                             <p className="text-sm font-black text-emerald-900">{b.name}</p>
-                            <p className="text-[9px] text-emerald-600 uppercase font-bold">Type: {b.type}</p>
+                            <p className="text-[9px] text-emerald-600 uppercase font-bold">{b.type} • {b.location} • Niv.{b.level}</p>
                           </div>
                           <p className="text-xs font-black text-emerald-700">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
                        </div>
@@ -1439,6 +1720,22 @@ const App: React.FC = () => {
                      )}
                    </div>
                 </div>
+
+                {/* Placements */}
+                {gameState.player.investments.length > 0 && (
+                   <div className="space-y-3">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Placements Financiers</p>
+                      <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
+                        {gameState.player.investments.map(inv => (
+                          <div key={inv.id} className="flex-none w-[200px] p-4 bg-slate-900 rounded-2xl text-white">
+                             <p className="text-[10px] font-black uppercase opacity-60">{inv.name}</p>
+                             <p className="text-sm font-bold">{inv.currentValue.toLocaleString()} FCFA</p>
+                             <p className="text-[9px] font-black text-emerald-400 uppercase mt-2">+{Math.round(inv.currentValue * inv.monthlyYield).toLocaleString()} FCFA/m</p>
+                          </div>
+                        ))}
+                      </div>
+                   </div>
+                )}
 
                 {/* Banque */}
                 <div className="space-y-3">
