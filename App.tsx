@@ -12,6 +12,45 @@ const INITIAL_STATS: Stats = {
   money: 50000
 };
 
+const GET_INITIAL_GAME_STATE = (banks: Bank[]): GameState => ({
+  isRegistered: false,
+  timer: 180,
+  player: {
+    name: "",
+    gender: "Homme",
+    age: 18,
+    month: 0,
+    job: null,
+    stats: INITIAL_STATS,
+    relations: [
+      { id: '1', name: 'Vieux Père Koffi', type: 'Ami', level: 75, gender: 'Homme' },
+      { id: '2', name: 'Maman Brigitte', type: 'Famille', level: 95, gender: 'Femme' }
+    ],
+    assets: { properties: [], vehicles: [] },
+    loans: [],
+    creditScore: 0,
+    politicalState: {
+      partyId: null,
+      rank: null,
+      membershipFee: 0,
+      salary: 0
+    },
+    education: "Baccalauréat",
+    educationState: {
+      currentDegree: null,
+      specialty: null,
+      monthsCompleted: 0,
+      degreesObtained: ["Baccalauréat"]
+    },
+    logs: [],
+    inventory: [],
+    businesses: [],
+    investments: []
+  },
+  marketBusinesses: [],
+  banks: banks
+});
+
 const COMPANIES: Company[] = [
   { id: '1', name: "Orange-CI", industry: "Telecom", prestige: 85 },
   { id: '2', name: "SOTRA", industry: "Transport", prestige: 40 },
@@ -147,46 +186,13 @@ const BUSINESS_CONFIG: Record<string, { baseCost: number, baseRevenue: number }>
   'Transport': { baseCost: 2500000, baseRevenue: 350000 }
 };
 
+const SAVE_KEY = 'abidjan_life_save_v1';
+
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const [gameState, setGameState] = useState<GameState>({
-    isRegistered: false,
-    timer: 180,
-    player: {
-      name: "",
-      gender: "Homme",
-      age: 18,
-      month: 0,
-      job: null,
-      stats: INITIAL_STATS,
-      relations: [
-        { id: '1', name: 'Vieux Père Koffi', type: 'Ami', level: 75, gender: 'Homme' },
-        { id: '2', name: 'Maman Brigitte', type: 'Famille', level: 95, gender: 'Femme' }
-      ],
-      assets: { properties: [], vehicles: [] },
-      loans: [],
-      creditScore: 0,
-      politicalState: {
-        partyId: null,
-        rank: null,
-        membershipFee: 0,
-        salary: 0
-      },
-      education: "Baccalauréat",
-      educationState: {
-        currentDegree: null,
-        specialty: null,
-        monthsCompleted: 0,
-        degreesObtained: ["Baccalauréat"]
-      },
-      logs: [],
-      inventory: [],
-      businesses: [],
-      investments: []
-    },
-    marketBusinesses: [],
-    banks: BANKS
-  });
+  const [showStartMenu, setShowStartMenu] = useState(false);
+  const [savePlayerName, setSavePlayerName] = useState("");
+  const [gameState, setGameState] = useState<GameState>(GET_INITIAL_GAME_STATE(BANKS));
 
   const [activeTab, setActiveTab] = useState<'vie' | 'travail' | 'social' | 'patrimoine' | 'activites' | 'boutique' | 'smartphone' | 'smartphone_app'>('vie');
   const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | 'politics' | null>(null);
@@ -199,9 +205,50 @@ const App: React.FC = () => {
   const gemini = new GeminiService();
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3000);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+      const saved = localStorage.getItem(SAVE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setSavePlayerName(parsed.player.name);
+          setShowStartMenu(true);
+          setShowRegister(false);
+        } catch (e) {
+          console.error("Corrupted save", e);
+        }
+      }
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (gameState.isRegistered) {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+    }
+  }, [gameState]);
+
+  const handleContinue = () => {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setGameState(parsed);
+        setShowStartMenu(false);
+        addLog("Bon retour à Babi !", "positive");
+      } catch (e) {
+        console.error("Failed to load save", e);
+        handleNewGame();
+      }
+    }
+  };
+
+  const handleNewGame = () => {
+    localStorage.removeItem(SAVE_KEY);
+    setGameState(GET_INITIAL_GAME_STATE(BANKS));
+    setShowRegister(true);
+    setShowStartMenu(false);
+  };
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1189,6 +1236,46 @@ const App: React.FC = () => {
           <p className="text-sm font-black uppercase tracking-widest text-white">
             Developed by <span className="text-orange-500">Alain Charles OFFI</span>
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showStartMenu) {
+    return (
+      <div className="h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-white w-full sm:max-w-md sm:mx-auto">
+        <div className="text-center mb-12 animate-in fade-in zoom-in duration-700">
+          <div className="w-20 h-20 bg-gradient-to-tr from-orange-600 to-yellow-400 rounded-3xl flex items-center justify-center shadow-2xl mb-6 mx-auto -rotate-6 border-4 border-white/10">
+            <i className="fa-solid fa-crown text-4xl text-white"></i>
+          </div>
+          <h1 className="text-4xl font-black uppercase tracking-tighter text-white">Abidjan <span className="text-orange-500 italic">Life</span></h1>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Prêt pour la suite ?</p>
+        </div>
+
+        <div className="w-full space-y-4">
+          <button
+            onClick={handleContinue}
+            className="w-full bg-orange-600 hover:bg-orange-700 p-6 rounded-[2rem] flex flex-col items-center gap-1 transition-all active:scale-95 shadow-xl shadow-orange-900/20 group"
+          >
+            <span className="text-xs font-black uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">Continuer la partie</span>
+            <span className="text-xl font-black">{savePlayerName || "Joueur"}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (window.confirm("Es-tu sûr de vouloir effacer ta progression actuelle et recommencer à zéro ?")) {
+                handleNewGame();
+              }
+            }}
+            className="w-full bg-slate-900 hover:bg-slate-800 border-2 border-slate-800 p-5 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3"
+          >
+            <i className="fa-solid fa-rotate-right text-slate-500"></i>
+            Nouvelle Partie
+          </button>
+        </div>
+
+        <div className="absolute bottom-12 text-center opacity-30">
+          <p className="text-[9px] font-black uppercase tracking-widest">Version 1.0.0</p>
         </div>
       </div>
     );
