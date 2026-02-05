@@ -1037,14 +1037,34 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white border-t-2 border-slate-100 p-4 min-h-[160px] shadow-[0_-10px_30px_rgba(0,0,0,0.03)] shrink-0">
+      <div className={`bg-white border-t-2 border-slate-100 transition-all duration-300 ${activeTab === 'vie' ? 'p-4 min-h-[160px] shrink-0' : 'fixed inset-0 z-[60] flex flex-col bg-slate-50'}`}>
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full gap-3">
             <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Le temps défile à Babi...</p>
           </div>
         ) : (
-          <div className="h-full">
+          <div className="h-full flex flex-col overflow-hidden">
+            {activeTab !== 'vie' && (
+              <div className="flex justify-between items-center p-6 bg-white border-b border-slate-100 shrink-0 safe-top shadow-sm">
+                <h3 className="text-slate-900 text-sm font-black uppercase tracking-[0.2em]">
+                  {activeTab === 'travail' ? 'Marché du Travail' :
+                   activeTab === 'social' ? 'Relations & Réseau' :
+                   activeTab === 'activites' ? 'Activités & Sorties' :
+                   activeTab === 'patrimoine' ? 'Banque & Patrimoine' :
+                   activeTab === 'boutique' ? 'Boutique' :
+                   activeTab === 'smartphone' ? 'Smartphone' :
+                   activeTab === 'smartphone_app' ? (selectedApp === 'bank' ? 'Banque Mobile' : selectedApp === 'business' ? 'Gestion Business' : 'Babi Love') : ''}
+                </h3>
+                <button
+                  onClick={() => setActiveTab('vie')}
+                  className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 active:scale-95 transition-all shadow-sm"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            )}
+            <div className={`flex-1 ${activeTab !== 'vie' && activeTab !== 'smartphone' && activeTab !== 'smartphone_app' ? 'overflow-y-auto p-4 pb-20' : 'relative'}`}>
             {activeTab === 'vie' && (
               <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2">
                 <button
@@ -1071,17 +1091,17 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'travail' && (
-              <div className="space-y-4 flex flex-col h-full">
-                <div className="flex justify-between items-center px-1 shrink-0">
-                   <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Marché de l'Emploi</h3>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center px-1">
+                   <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Ton Emploi Actuel</p>
                    {gameState.player.job && (
                      <button onClick={quitJob} className="text-[9px] font-black text-rose-500 uppercase border border-rose-200 px-3 py-1 rounded-lg hover:bg-rose-50 transition-all active:scale-90">Démissionner</button>
                    )}
                 </div>
-                <div className="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-6">
-                  {gameState.player.job ? (
-                    <div className="p-8 bg-emerald-50 border-2 border-emerald-100 rounded-[2.5rem] flex flex-col items-center text-center shadow-inner mx-1">
-                       <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-4">
+                <div className="space-y-8">
+                  {gameState.player.job && (
+                    <div className="p-8 bg-white border-2 border-emerald-100 rounded-[2.5rem] flex flex-col items-center text-center shadow-sm mx-1">
+                       <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center mb-4">
                         <i className="fa-solid fa-briefcase text-emerald-500 text-3xl"></i>
                        </div>
                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-1">{gameState.player.job.company.name}</p>
@@ -1089,8 +1109,11 @@ const App: React.FC = () => {
                        <div className="h-px w-12 bg-emerald-200 my-4"></div>
                        <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest">{gameState.player.job.salary.toLocaleString()} FCFA / MOIS</p>
                     </div>
-                  ) : (
-                    Array.from(new Set(JOBS.map(j => j.category))).map(cat => (
+                  )}
+
+                  <div className="space-y-6">
+                    {!gameState.player.job && <p className="text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest py-4">Offres Disponibles</p>}
+                    {Array.from(new Set(JOBS.map(j => j.category))).map(cat => (
                       <div key={cat} className="space-y-3">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-2 border-orange-500 pl-2 ml-1">{cat}</h4>
                         <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2 px-1">
@@ -1111,8 +1134,8 @@ const App: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                    ))
-                  )}
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -1270,7 +1293,7 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'smartphone' && (
-               <div className="h-full bg-slate-900 rounded-[3rem] p-6 border-4 border-slate-800 shadow-inner relative overflow-hidden flex flex-col">
+               <div className="absolute inset-0 bg-slate-900 p-8 flex flex-col overflow-y-auto">
                   <div className="flex justify-between items-center mb-8 px-2">
                     <span className="text-[10px] font-bold text-white">Orange CI</span>
                     <span className="text-[10px] font-bold text-white">12:00</span>
@@ -1296,7 +1319,7 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'smartphone_app' && (
-               <div className="h-full bg-white rounded-t-3xl p-6 flex flex-col">
+               <div className="absolute inset-0 bg-white p-6 flex flex-col overflow-hidden">
                   <div className="flex justify-between items-center mb-6">
                     <button onClick={() => setActiveTab('smartphone')} className="text-slate-400"><i className="fa-solid fa-chevron-left"></i></button>
                     <h3 className="text-sm font-black uppercase tracking-widest">{selectedApp === 'bank' ? 'BABI BANK' : selectedApp === 'business' ? 'BABI BIZ' : 'BABI LOVE'}</h3>
@@ -1437,7 +1460,7 @@ const App: React.FC = () => {
 
             {/* Modal Achat Maison / Meubler / Etudes */}
             {selectedPropertyId && (
-              <div className="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="fixed inset-0 z-[70] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="bg-white w-full max-w-sm rounded-3xl p-6 overflow-y-auto max-h-[80vh]">
                    <div className="flex justify-between items-center mb-6">
                      <h4 className="text-sm font-black uppercase tracking-widest">
@@ -1545,6 +1568,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             )}
+            </div>
           </div>
         )}
       </div>
