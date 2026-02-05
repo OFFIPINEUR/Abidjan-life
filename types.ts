@@ -22,8 +22,9 @@ export interface Job {
   stressLevel: number;
   requirement: number; // Smarts needed
   workingHours: string; // Heures de travail
-  requiredDegree?: 'Licence' | 'Master' | 'Doctorat';
+  requiredDegree?: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification';
   requiredSpecialty?: string;
+  category: string;
 }
 
 export interface Loan {
@@ -97,7 +98,7 @@ export interface InventoryItem {
 }
 
 export interface EducationState {
-  currentDegree: 'Licence' | 'Master' | 'Doctorat' | null;
+  currentDegree: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification' | null;
   specialty: string | null;
   monthsCompleted: number;
   degreesObtained: string[];
