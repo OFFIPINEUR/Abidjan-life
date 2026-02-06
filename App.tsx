@@ -59,7 +59,8 @@ const GET_INITIAL_GAME_STATE = (banks: Bank[]): GameState => ({
     investments: [],
     jobWarnings: 0,
     settings: {
-      wallpaper: WALLPAPERS[0]
+      wallpaper: WALLPAPERS[0],
+      datingPreference: 'Femme'
     }
   },
   marketBusinesses: [],
@@ -729,7 +730,9 @@ const App: React.FC = () => {
 
   const findNewRelation = async () => {
     setLoading(true);
-    const event = await gemini.generateNarrative(gameState, 'dating', "Le joueur cherche une rencontre amoureuse sur une application. Présente un profil détaillé (nom, âge, quartier, job, phrase d'accroche).");
+    const pref = gameState.player.settings?.datingPreference || 'Femme';
+    const extra = `Le joueur cherche une rencontre amoureuse sur une application. PRÉFÉRENCE DE GENRE : ${pref}. Présente un profil détaillé (nom, âge, quartier, job, phrase d'accroche).`;
+    const event = await gemini.generateNarrative(gameState, 'dating', extra);
     if (event) {
       event.choices = event.choices.map((c: any) => ({
         ...c,
@@ -1528,7 +1531,22 @@ const App: React.FC = () => {
           <h1 className="text-4xl font-black uppercase tracking-tighter text-orange-500">Nouvelle Vie</h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Bienvenue au Pays des Éléphants</p>
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); setGameState(p => ({ ...p, isRegistered: true })); setShowRegister(false); addLog("Nouvelle aventure à Babi !", "positive"); }} className="w-full space-y-6">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          setGameState(p => ({
+            ...p,
+            isRegistered: true,
+            player: {
+              ...p.player,
+              settings: {
+                ...p.player.settings!,
+                datingPreference: p.player.gender === 'Homme' ? 'Femme' : 'Homme'
+              }
+            }
+          }));
+          setShowRegister(false);
+          addLog("Nouvelle aventure à Babi !", "positive");
+        }} className="w-full space-y-6">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ton Nom (Le Blaze)</label>
             <input required className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl focus:border-orange-600 outline-none font-bold text-lg text-white" value={gameState.player.name} onChange={e => setGameState(p => ({ ...p, player: { ...p.player, name: e.target.value }}))} placeholder="Djo l'Américain" />
@@ -1642,50 +1660,51 @@ const App: React.FC = () => {
           <div ref={logEndRef} />
         </div>
 
-        {showMatch && (
-          <div className="absolute inset-0 z-[110] bg-rose-600/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
-             <div className="relative mb-8">
-                <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-2xl animate-elastic">
-                   <i className={`fa-solid ${showMatch.type === 'Love' ? 'fa-heart text-rose-500' : 'fa-handshake text-blue-500'} text-6xl`}></i>
-                </div>
-                <div className="absolute -top-2 -right-2 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                   <i className="fa-solid fa-star text-white"></i>
-                </div>
-             </div>
-             <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">
-                {showMatch.type === 'Love' ? "C'est un Match !" : "Nouveau Frangin !"}
-             </h2>
-             <p className="text-rose-100 text-lg font-bold italic mb-8">
-                {showMatch.name} vient d'être ajouté à tes contacts.
-             </p>
-             <div className="flex gap-2">
-                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-75"></div>
-                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-150"></div>
-                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-300"></div>
-             </div>
-          </div>
-        )}
-
-        {currentEvent && (
-          <div className="absolute inset-0 z-[90] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-white w-full max-h-[90%] overflow-y-auto rounded-[2.5rem] p-8 shadow-2xl animate-elastic">
-               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-               <h3 className="text-orange-600 text-xs font-black uppercase tracking-[0.2em] mb-4">Alerte Babi</h3>
-               <p className="text-slate-900 font-bold text-xl leading-snug mb-8 italic">"{currentEvent.description}"</p>
-               <div className="space-y-3">
-                  {currentEvent.choices.map((c: any, i: number) => (
-                    <button key={i} onClick={(e) => handleChoice(c, e)} className="w-full text-left p-5 bg-slate-50 hover:bg-slate-100 border-2 border-slate-100 rounded-2xl text-slate-950 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-4 active:scale-95">
-                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                        <i className={`fa-solid ${c.actionType === 'HIRE' ? 'fa-check' : 'fa-chevron-right'} text-[10px] text-orange-600`}></i>
-                      </div>
-                      {c.text}
-                    </button>
-                  ))}
-               </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {showMatch && (
+        <div className="fixed inset-0 z-[110] bg-rose-600/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
+           <div className="relative mb-8">
+              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-2xl animate-elastic">
+                 <i className={`fa-solid ${showMatch.type === 'Love' ? 'fa-heart text-rose-500' : 'fa-handshake text-blue-500'} text-6xl`}></i>
+              </div>
+              <div className="absolute -top-2 -right-2 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                 <i className="fa-solid fa-star text-white"></i>
+              </div>
+           </div>
+           <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">
+              {showMatch.type === 'Love' ? "C'est un Match !" : "Nouveau Frangin !"}
+           </h2>
+           <p className="text-rose-100 text-lg font-bold italic mb-8">
+              {showMatch.name} vient d'être ajouté à tes contacts.
+           </p>
+           <div className="flex gap-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-75"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-150"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-300"></div>
+           </div>
+        </div>
+      )}
+
+      {currentEvent && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md max-h-[90%] overflow-y-auto rounded-[2.5rem] p-8 shadow-2xl animate-elastic">
+             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+             <h3 className="text-orange-600 text-xs font-black uppercase tracking-[0.2em] mb-4">Alerte Babi</h3>
+             <p className="text-slate-900 font-bold text-xl leading-snug mb-8 italic">"{currentEvent.description}"</p>
+             <div className="space-y-3">
+                {currentEvent.choices.map((c: any, i: number) => (
+                  <button key={i} onClick={(e) => handleChoice(c, e)} className="w-full text-left p-5 bg-slate-50 hover:bg-slate-100 border-2 border-slate-100 rounded-2xl text-slate-950 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-4 active:scale-95">
+                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                      <i className={`fa-solid ${c.actionType === 'HIRE' ? 'fa-check' : 'fa-chevron-right'} text-[10px] text-orange-600`}></i>
+                    </div>
+                    {c.text}
+                  </button>
+                ))}
+             </div>
+          </div>
+        </div>
+      )}
 
       <div className={`bg-white border-t-2 border-slate-100 transition-all duration-300 ${activeTab === 'vie' ? 'p-4 min-h-[160px] shrink-0' : 'fixed inset-0 z-[60] flex flex-col bg-slate-50'}`}>
         {loading ? (
@@ -2379,12 +2398,36 @@ const App: React.FC = () => {
                     )}
 
                     {selectedApp === 'dating' && (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                          <div className="p-6 bg-rose-50 rounded-3xl text-center">
                             <i className="fa-solid fa-fire text-rose-500 text-3xl mb-2"></i>
                             <p className="text-sm font-bold text-rose-900 italic">"Trouve ton gbairé sur Babi Love"</p>
                          </div>
-                         <button onClick={findNewRelation} className="w-full bg-rose-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all">Lancer un Swipe</button>
+
+                         <div className="space-y-3">
+                            <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Je recherche :</p>
+                            <div className="flex gap-2">
+                               {['Homme', 'Femme', 'Les deux'].map((pref) => (
+                                 <button
+                                   key={pref}
+                                   onClick={() => setGameState(prev => ({
+                                     ...prev,
+                                     player: {
+                                       ...prev.player,
+                                       settings: { ...prev.player.settings!, datingPreference: pref as any }
+                                     }
+                                   }))}
+                                   className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${gameState.player.settings?.datingPreference === pref ? 'bg-rose-500 text-white shadow-lg' : (isDarkMode ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-400')}`}
+                                 >
+                                   {pref}
+                                 </button>
+                               ))}
+                            </div>
+                         </div>
+
+                         <button onClick={findNewRelation} className="w-full bg-rose-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-rose-500/20">
+                           Lancer un Swipe
+                         </button>
                       </div>
                     )}
                   </div>

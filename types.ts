@@ -170,6 +170,7 @@ export interface GameState {
     jobWarnings: number;
     settings?: {
       wallpaper: string;
+      datingPreference: 'Homme' | 'Femme' | 'Les deux';
     };
   };
   marketBusinesses: Business[];
