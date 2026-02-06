@@ -1368,28 +1368,30 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto bg-slate-50 p-4 space-y-4 relative">
-        {gameState.player.logs.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center opacity-30">
-            <i className="fa-solid fa-book-open text-6xl text-slate-300 mb-4"></i>
-            <p className="text-xs font-bold uppercase text-slate-400">Journal d'Abidjan vide...</p>
-          </div>
-        )}
-        {gameState.player.logs.map((log) => (
-          <div key={log.id} className="animate-in slide-in-from-bottom duration-300">
-             <div className={`p-4 rounded-2xl shadow-sm border-l-4 bg-white ${log.type === 'positive' ? 'border-emerald-500' : log.type === 'negative' ? 'border-rose-500' : 'border-slate-300'}`}>
-                <div className="flex justify-between items-start mb-2">
-                   <span className="bg-slate-100 text-[10px] font-black px-2 py-0.5 rounded text-slate-500 uppercase tracking-widest">{log.year} ANS - {MONTHS[log.month || 0]}</span>
-                </div>
-                <p className="text-slate-900 text-sm font-bold leading-relaxed">{log.text}</p>
-             </div>
-          </div>
-        ))}
-        <div ref={logEndRef} />
+      <div className="flex-1 relative flex flex-col min-h-0 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {gameState.player.logs.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center opacity-30">
+              <i className="fa-solid fa-book-open text-6xl text-slate-300 mb-4"></i>
+              <p className="text-xs font-bold uppercase text-slate-400">Journal d'Abidjan vide...</p>
+            </div>
+          )}
+          {gameState.player.logs.map((log) => (
+            <div key={log.id} className="animate-in slide-in-from-bottom duration-300">
+               <div className={`p-4 rounded-2xl shadow-sm border-l-4 bg-white ${log.type === 'positive' ? 'border-emerald-500' : log.type === 'negative' ? 'border-rose-500' : 'border-slate-300'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                     <span className="bg-slate-100 text-[10px] font-black px-2 py-0.5 rounded text-slate-500 uppercase tracking-widest">{log.year} ANS - {MONTHS[log.month || 0]}</span>
+                  </div>
+                  <p className="text-slate-900 text-sm font-bold leading-relaxed">{log.text}</p>
+               </div>
+            </div>
+          ))}
+          <div ref={logEndRef} />
+        </div>
 
         {currentEvent && (
           <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-end p-4">
-            <div className="bg-white w-full rounded-3xl p-8 shadow-2xl animate-in slide-in-from-bottom duration-500">
+            <div className="bg-white w-full max-h-full overflow-y-auto rounded-3xl p-8 shadow-2xl animate-in slide-in-from-bottom duration-500">
                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
                <h3 className="text-orange-600 text-xs font-black uppercase tracking-[0.2em] mb-4">Alerte Babi</h3>
                <p className="text-slate-900 font-bold text-xl leading-snug mb-8 italic">"{currentEvent.description}"</p>
