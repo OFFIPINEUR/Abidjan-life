@@ -672,62 +672,61 @@ const App: React.FC = () => {
     setLoading(true);
     let extra = `Action: ${action} avec ${relation.name} (${relation.type}).`;
 
+    let giftToOffer = null;
     if (action === 'gift') {
-      const gift = gameState.player.inventory.find(i => i.type === 'Gift');
-      if (!gift) {
+      giftToOffer = gameState.player.inventory.find(i => i.type === 'Gift');
+      if (!giftToOffer) {
         addLog("Tu n'as pas de cadeau à offrir ! Va en acheter à la boutique.", "negative");
+        addFeedback("Pas de cadeau !", window.innerWidth / 2, window.innerHeight / 2, "text-rose-500 font-black uppercase");
         setLoading(false);
         return;
       }
-      extra += ` Cadeau offert: ${gift.name}.`;
-      // Update level and remove gift
-      setGameState(prev => ({
-        ...prev,
-        player: {
-          ...prev.player,
-          relations: prev.player.relations.map(r => r.id === relId ? { ...r, level: Math.min(100, r.level + 15) } : r),
-          inventory: prev.player.inventory.filter(i => i.id !== gift.id)
-        }
-      }));
+      extra += ` Cadeau offert: ${giftToOffer.name}.`;
     }
 
     const event = await gemini.generateNarrative(gameState,
       action === 'become_partner' ? 'become_partner' :
       action === 'separate' ? 'breakup' :
-      action === 'flirt' || action === 'marry' ? 'dating' : 'social',
+      action === 'marry' ? 'marriage' :
+      action === 'child' ? 'child_event' :
+      'social',
       extra
     );
+
     if (event) {
+      // Standardize choices with context
+      event.choices = event.choices.map((c: any) => ({
+        ...c,
+        partnerId: relId,
+        socialAction: action,
+        giftId: action === 'gift' ? giftToOffer?.id : undefined
+      }));
+
       // Add specialized choices for marriage/cohabit
       if (action === 'marry') {
         event.choices = event.choices.map((c: any) => ({
           ...c,
-          actionType: c.text.toLowerCase().includes('oui') ? 'MARRY' : 'FAIL',
-          partnerId: relId
+          actionType: (c.actionType === 'MARRY' || c.text.toLowerCase().includes('oui') || c.text.toLowerCase().includes('mariage')) ? 'MARRY' : 'FAIL'
         }));
       } else if (action === 'cohabit') {
          event.choices = event.choices.map((c: any) => ({
           ...c,
-          actionType: c.text.toLowerCase().includes('oui') ? 'COHABIT' : 'FAIL',
-          partnerId: relId
+          actionType: (c.actionType === 'COHABIT' || c.text.toLowerCase().includes('oui') || c.text.toLowerCase().includes('vivre ensemble')) ? 'COHABIT' : 'FAIL'
         }));
       } else if (action === 'child') {
          event.choices = event.choices.map((c: any) => ({
           ...c,
-          actionType: c.text.toLowerCase().includes('oui') ? 'CHILD' : 'FAIL',
-          partnerId: relId
+          actionType: (c.actionType === 'CHILD' || c.text.toLowerCase().includes('oui') || c.text.toLowerCase().includes('enfant')) ? 'CHILD' : 'FAIL'
         }));
       } else if (action === 'become_partner') {
         event.choices = event.choices.map((c: any) => ({
           ...c,
-          actionType: c.text.toLowerCase().includes('oui') ? 'BECOME_PARTNER' : 'FAIL',
-          partnerId: relId
+          actionType: (c.actionType === 'BECOME_PARTNER' || c.text.toLowerCase().includes('oui') || c.text.toLowerCase().includes('petit')) ? 'BECOME_PARTNER' : 'FAIL'
         }));
       } else if (action === 'separate') {
         event.choices = event.choices.map((c: any) => ({
           ...c,
-          actionType: 'SEPARATE',
-          partnerId: relId
+          actionType: 'SEPARATE'
         }));
       }
       setCurrentEvent(event);
@@ -1209,7 +1208,35 @@ const App: React.FC = () => {
   };
 
   const handleChoice = (choice: any, e?: React.MouseEvent) => {
-    updateStats(choice.effect, e?.clientX, e?.clientY);
+    updateStats(choice.effect || {}, e?.clientX, e?.clientY);
+
+    // Gestions des interactions sociales (Bonus de relation et consommation d'items)
+    if (choice.socialAction === 'gift' && choice.partnerId && choice.giftId) {
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          relations: prev.player.relations.map(r => r.id === choice.partnerId ? { ...r, level: Math.min(100, r.level + 15) } : r),
+          inventory: prev.player.inventory.filter(i => i.id !== choice.giftId)
+        }
+      }));
+    } else if (choice.socialAction === 'chat' && choice.partnerId) {
+        setGameState(prev => ({
+            ...prev,
+            player: {
+                ...prev.player,
+                relations: prev.player.relations.map(r => r.id === choice.partnerId ? { ...r, level: Math.min(100, r.level + 5) } : r)
+            }
+        }));
+    } else if (choice.socialAction === 'flirt' && choice.partnerId) {
+        setGameState(prev => ({
+            ...prev,
+            player: {
+                ...prev.player,
+                relations: prev.player.relations.map(r => r.id === choice.partnerId ? { ...r, level: Math.min(100, r.level + 8) } : r)
+            }
+        }));
+    }
 
     if (choice.actionType === 'HIRE' && choice.jobToApply) {
       setGameState(prev => ({
@@ -1502,7 +1529,14 @@ const App: React.FC = () => {
       business: "Le joueur demande des tuyaux sur les affaires à Abidjan."
     };
     const event = await gemini.generateNarrative(gameState, 'social_npc', `NPC:Vieux Père Koffi. Action: ${contexts[action]}`);
-    if (event) setCurrentEvent(event);
+    if (event) {
+      event.choices = event.choices.map((c: any) => ({
+        ...c,
+        partnerId: '2', // ID fixe de Koffi
+        socialAction: 'chat'
+      }));
+      setCurrentEvent(event);
+    }
     setLoading(false);
   };
 
