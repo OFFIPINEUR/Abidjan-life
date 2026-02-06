@@ -9,7 +9,18 @@ const INITIAL_STATS: Stats = {
   smarts: 30,
   looks: 60,
   stress: 10,
-  money: 50000
+  money: 50000,
+  reputation: 30,
+  performance: 0,
+  networking: 0
+};
+
+const getReputationTitle = (rep: number) => {
+  if (rep <= 20) return "Gâte-mœurs";
+  if (rep <= 40) return "Inconnu";
+  if (rep <= 60) return "Petit quelqu'un";
+  if (rep <= 80) return "Boss du quartier";
+  return "Vieux Père / Respecté";
 };
 
 const GET_INITIAL_GAME_STATE = (banks: Bank[]): GameState => ({
@@ -46,6 +57,7 @@ const GET_INITIAL_GAME_STATE = (banks: Bank[]): GameState => ({
     inventory: [],
     businesses: [],
     investments: [],
+    jobWarnings: 0,
     settings: {
       wallpaper: WALLPAPERS[0]
     }
@@ -589,9 +601,64 @@ const App: React.FC = () => {
     addLog(`🛒 ACHAT : ${item.name} ajouté à ton inventaire.`, "positive");
   };
 
-  const socialInteract = async (relId: string, action: 'chat' | 'flirt' | 'gift' | 'marry' | 'cohabit' | 'child' | 'become_partner' | 'separate') => {
+  const helpFinancially = (relId: string) => {
     const relation = gameState.player.relations.find(r => r.id === relId);
     if (!relation) return;
+
+    const amountStr = window.prompt(`Combien veux-tu donner à ${relation.name} ?`, "10000");
+    const amount = parseInt(amountStr || "0");
+
+    if (isNaN(amount) || amount <= 0) return;
+
+    if (gameState.player.stats.money < amount) {
+      addLog("Pas assez d'argent !", "negative");
+      return;
+    }
+
+    updateStats({
+      money: -amount,
+      reputation: Math.min(5, Math.ceil(amount / 50000)),
+      happiness: 5
+    });
+
+    setGameState(prev => ({
+      ...prev,
+      player: {
+        ...prev.player,
+        relations: prev.player.relations.map(r =>
+          r.id === relId ? { ...r, level: Math.min(100, r.level + Math.ceil(amount / 10000)) } : r
+        ),
+        stats: {
+          ...prev.player.stats,
+          networking: Math.min(100, prev.player.stats.networking + Math.ceil(amount / 20000))
+        }
+      }
+    }));
+
+    addLog(`🤝 GÉNÉROSITÉ : Tu as donné ${amount.toLocaleString()} FCFA à ${relation.name}. Ton respect grimpe !`, "positive");
+  };
+
+  const searchForCombine = async () => {
+    setLoading(true);
+    const event = await gemini.generateNarrative(gameState, 'random_event', "Le joueur cherche une 'combine' (une affaire louche mais lucrative) dans les rues de Babi.");
+    if (event) {
+      event.choices = event.choices.map((c: any) => ({
+        ...c,
+        actionType: 'COMBINE'
+      }));
+      setCurrentEvent(event);
+    }
+    setLoading(false);
+  };
+
+  const socialInteract = async (relId: string, action: 'chat' | 'flirt' | 'gift' | 'marry' | 'cohabit' | 'child' | 'become_partner' | 'separate' | 'help') => {
+    const relation = gameState.player.relations.find(r => r.id === relId);
+    if (!relation) return;
+
+    if (action === 'help') {
+      helpFinancially(relId);
+      return;
+    }
 
     setLoading(true);
     let extra = `Action: ${action} avec ${relation.name} (${relation.type}).`;
@@ -704,6 +771,9 @@ const App: React.FC = () => {
       if (diff.stress) addFeedback(`${diff.stress > 0 ? '+' : ''}${diff.stress} Stress`, x - 20, y, diff.stress > 0 ? 'text-orange-500' : 'text-blue-500');
       if (diff.smarts) addFeedback(`${diff.smarts > 0 ? '+' : ''}${diff.smarts} Smarts`, x, y, 'text-sky-500');
       if (diff.looks) addFeedback(`${diff.looks > 0 ? '+' : ''}${diff.looks} Looks`, x, y, 'text-fuchsia-500');
+      if (diff.reputation) addFeedback(`${diff.reputation > 0 ? '+' : ''}${diff.reputation} Respect`, x, y - 40, 'text-indigo-500');
+      if (diff.performance) addFeedback(`${diff.performance > 0 ? '+' : ''}${diff.performance} Perf`, x + 40, y, 'text-orange-500');
+      if (diff.networking) addFeedback(`${diff.networking > 0 ? '+' : ''}${diff.networking} Réseau`, x - 40, y, 'text-blue-500');
     }
 
     setGameState(prev => ({
@@ -716,7 +786,10 @@ const App: React.FC = () => {
           smarts: Math.max(0, Math.min(100, prev.player.stats.smarts + (diff.smarts || 0))),
           looks: Math.max(0, Math.min(100, prev.player.stats.looks + (diff.looks || 0))),
           stress: Math.max(0, Math.min(100, prev.player.stats.stress + (diff.stress || 0))),
-          money: prev.player.stats.money + (diff.money || 0)
+          money: prev.player.stats.money + (diff.money || 0),
+          reputation: Math.max(0, Math.min(100, prev.player.stats.reputation + (diff.reputation || 0))),
+          performance: Math.max(0, Math.min(100, prev.player.stats.performance + (diff.performance || 0))),
+          networking: Math.max(0, Math.min(100, prev.player.stats.networking + (diff.networking || 0)))
         }
       }
     }));
@@ -826,6 +899,19 @@ const App: React.FC = () => {
       };
     });
 
+    // Automatic Promotion chance
+    if (gameState.player.job && gameState.player.stats.performance > 80 && gameState.player.stats.networking > 50 && Math.random() > 0.8) {
+      const bonus = Math.round(gameState.player.job.salary * 0.2);
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          job: prev.player.job ? { ...prev.player.job, salary: prev.player.job.salary + bonus } : null
+        }
+      }));
+      addLog(`🎊 PROMOTION : Tes efforts ont payé ! Tu as reçu une augmentation de ${bonus.toLocaleString()} FCFA.`, 'positive');
+    }
+
     if (eduCompleted) {
       addLog(`🎓 DIPLÔME OBTENU : Félicitations ! Tu as terminé ton ${completedDegreeName}.`, 'positive');
     }
@@ -836,6 +922,35 @@ const App: React.FC = () => {
 
     if (gameState.player.job) {
       addLog(`💰 VIREMENT REÇU : +${gameState.player.job.salary.toLocaleString()} FCFA (Salaire ${MONTHS[gameState.player.month]})`, 'positive');
+
+      // Transport logic
+      const hasVehicle = gameState.player.assets.vehicles.length > 0;
+      if (!hasVehicle && Math.random() > 0.7) {
+        setGameState(prev => {
+          const newWarnings = prev.player.jobWarnings + 1;
+          let performanceImpact = 0;
+          if (newWarnings >= 2) {
+            performanceImpact = -15;
+            addLog(`🚌 TRANSPORT : Encore en retard ! Ton patron a perdu patience. Ta performance chute.`, 'negative');
+          } else {
+            addLog(`🚌 TRANSPORT : Les gbakas étaient bloqués, tu es arrivé en retard. Premier avertissement !`, 'negative');
+          }
+          return {
+            ...prev,
+            player: {
+              ...prev.player,
+              jobWarnings: newWarnings,
+              stats: {
+                ...prev.player.stats,
+                performance: Math.max(0, prev.player.stats.performance + performanceImpact)
+              }
+            }
+          };
+        });
+      } else if (hasVehicle) {
+        // Having a vehicle slightly boosts performance or at least prevents the penalty
+        updateStats({ performance: 2 });
+      }
     }
 
     if (businessIncome > 0) {
@@ -1009,8 +1124,19 @@ const App: React.FC = () => {
     updateStats(choice.effect, e?.clientX, e?.clientY);
 
     if (choice.actionType === 'HIRE' && choice.jobToApply) {
-      setGameState(prev => ({ ...prev, player: { ...prev.player, job: choice.jobToApply }}));
-      addLog(`✅ EMBAUCHÉ : Tu es ${choice.jobToApply.title} !`, 'positive');
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          job: choice.jobToApply,
+          jobWarnings: 0,
+          stats: {
+            ...prev.player.stats,
+            performance: Math.max(0, prev.player.stats.performance - 30) // Performance drops for new experience
+          }
+        }
+      }));
+      addLog(`✅ EMBAUCHÉ : Tu es ${choice.jobToApply.title} ! Nouvelle expérience, faut faire tes preuves.`, 'positive');
       setActiveTab('vie');
     } else if (choice.actionType === 'FAIL') {
       addLog(`❌ ÉCHEC : Ça n'a pas marché.`, 'negative');
@@ -1178,8 +1304,46 @@ const App: React.FC = () => {
 
   const quitJob = () => {
     if (window.confirm("Tu es sûr ?")) {
-      setGameState(prev => ({ ...prev, player: { ...prev.player, job: null }}));
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          job: null,
+          jobWarnings: 0
+        }
+      }));
       addLog("Tu as démissionné.", 'neutral');
+    }
+  };
+
+  const askForPromotion = () => {
+    if (!gameState.player.job) return;
+
+    if (gameState.player.stats.performance < 70) {
+      addLog("❌ Ton patron trouve que tu ne travailles pas assez pour une promotion.", "negative");
+      updateStats({ performance: -5 });
+      return;
+    }
+
+    const successChance = (gameState.player.stats.performance + gameState.player.stats.networking) / 200;
+    if (Math.random() < successChance) {
+      const bonus = Math.round(gameState.player.job.salary * 0.15);
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          job: prev.player.job ? { ...prev.player.job, salary: prev.player.job.salary + bonus } : null,
+          stats: {
+            ...prev.player.stats,
+            performance: 40, // Reset performance after promotion
+            reputation: prev.player.stats.reputation + 10
+          }
+        }
+      }));
+      addLog(`🎊 SUCCÈS : Promotion accordée ! Nouveau salaire: ${ (gameState.player.job.salary + bonus).toLocaleString() } FCFA.`, 'positive');
+    } else {
+      addLog("❌ Promotion refusée pour le moment. 'C'est pas encore ton heure', dit le patron.", "negative");
+      updateStats({ stress: 10, performance: 5 });
     }
   };
 
@@ -1386,7 +1550,10 @@ const App: React.FC = () => {
         )}
         <div className="flex justify-between items-start mb-6 gap-4">
           <div className="space-y-1 overflow-hidden">
-            <h2 className="text-xl md:text-2xl font-black text-white leading-none uppercase tracking-tighter truncate">{gameState.player.name}</h2>
+            <h2 className="text-xl md:text-2xl font-black text-white leading-none uppercase tracking-tighter truncate">
+              {gameState.player.name}
+              <span className="block text-[10px] text-orange-400 font-bold tracking-widest mt-1">{getReputationTitle(gameState.player.stats.reputation)}</span>
+            </h2>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="bg-orange-600 text-[9px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider shrink-0">{gameState.player.age} ANS</span>
               <span className="bg-blue-600 text-[9px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider shrink-0">{MONTHS[gameState.player.month].toUpperCase()}</span>
@@ -1405,6 +1572,7 @@ const App: React.FC = () => {
           {[
             { label: 'Santé', val: gameState.player.stats.health, color: 'bg-rose-500', icon: 'fa-heart-pulse' },
             { label: 'Bonheur', val: gameState.player.stats.happiness, color: 'bg-amber-400', icon: 'fa-face-smile' },
+            { label: 'Respect', val: gameState.player.stats.reputation, color: 'bg-indigo-500', icon: 'fa-crown' },
             { label: 'Smarts', val: gameState.player.stats.smarts, color: 'bg-sky-500', icon: 'fa-brain' },
             { label: 'Looks', val: gameState.player.stats.looks, color: 'bg-fuchsia-500', icon: 'fa-person-rays' }
           ].map((s) => (
@@ -1534,6 +1702,30 @@ const App: React.FC = () => {
                        <p className="text-xl font-black text-emerald-950 uppercase">{gameState.player.job.title}</p>
                        <div className="h-px w-12 bg-emerald-200 my-4"></div>
                        <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest">{gameState.player.job.salary.toLocaleString()} FCFA / MOIS</p>
+
+                       <div className="w-full mt-6 grid grid-cols-2 gap-4">
+                          <div className="bg-emerald-50 p-3 rounded-2xl">
+                             <p className="text-[8px] font-black text-emerald-600 uppercase">Performance</p>
+                             <div className="h-1.5 w-full bg-emerald-200 rounded-full mt-1">
+                                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${gameState.player.stats.performance}%` }}></div>
+                             </div>
+                             <p className="text-[10px] font-bold mt-1">{gameState.player.stats.performance}%</p>
+                          </div>
+                          <div className="bg-blue-50 p-3 rounded-2xl">
+                             <p className="text-[8px] font-black text-blue-600 uppercase">Réseautage</p>
+                             <div className="h-1.5 w-full bg-blue-200 rounded-full mt-1">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${gameState.player.stats.networking}%` }}></div>
+                             </div>
+                             <p className="text-[10px] font-bold mt-1">{gameState.player.stats.networking}%</p>
+                          </div>
+                       </div>
+
+                       <button
+                        onClick={askForPromotion}
+                        className="mt-6 w-full bg-emerald-600 text-white py-3 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all"
+                       >
+                         Demander une Promotion
+                       </button>
                     </div>
                   )}
 
@@ -1607,6 +1799,8 @@ const App: React.FC = () => {
                                <button onClick={() => socialInteract(rel.id, 'chat')} className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 py-2 rounded-lg col-span-2">Action Spéciale (IA)</button>
                             )}
 
+                            <button onClick={() => socialInteract(rel.id, 'help')} className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 py-2 rounded-lg">Aider (F)</button>
+
                             {rel.level >= 40 && !['Enfant', 'Famille', 'Conjoint', 'Petit(e) ami(e)', 'Maîtresse', 'Amant', 'Amour'].includes(rel.type) && rel.gender !== gameState.player.gender && (
                                <button onClick={() => socialInteract(rel.id, 'flirt')} className="text-[8px] font-black uppercase text-rose-600 bg-rose-50 py-2 rounded-lg">Draguer</button>
                             )}
@@ -1649,6 +1843,10 @@ const App: React.FC = () => {
                  <button onClick={() => setSelectedPropertyId('education')} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100 active:scale-95 transition-all">
                     <i className="fa-solid fa-graduation-cap text-blue-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Études</span>
+                 </button>
+                 <button onClick={searchForCombine} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-slate-900 rounded-2xl border-2 border-slate-800 active:scale-95 transition-all">
+                    <i className="fa-solid fa-mask text-orange-500 text-2xl mb-1"></i>
+                    <span className="text-[10px] font-black uppercase text-white text-center">Combine</span>
                  </button>
                  {[
                    { label: 'Spa', icon: 'fa-spa', color: 'text-teal-500', action: (e: any) => takeRestActivity('Spa', e) },

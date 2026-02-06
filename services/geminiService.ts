@@ -43,7 +43,7 @@ export class GeminiService {
       Joueur: ${state.player.name}, ${state.player.gender}, ${state.player.age} ans.
       Statut: ${state.player.job ? state.player.job.title + " chez " + state.player.job.company.name : "Sans emploi"}.
       Éducation: ${currentEduContext}
-      Stats: Santé ${state.player.stats.health}, Bonheur ${state.player.stats.happiness}, Smarts ${state.player.stats.smarts}, Argent ${state.player.stats.money} FCFA.
+      Stats: Santé ${state.player.stats.health}, Bonheur ${state.player.stats.happiness}, Smarts ${state.player.stats.smarts}, Argent ${state.player.stats.money} FCFA, Respect/Réputation ${state.player.stats.reputation}/100, Performance Pro ${state.player.stats.performance}/100, Réseautage ${state.player.stats.networking}/100.
       Famille: ${spouse ? 'Marié(e) à ' + spouse.name : 'Célibataire'}, ${children.length} enfant(s).
       Patrimoine: ${state.player.assets.properties.length} maison(s), ${state.player.assets.vehicles.length} véhicule(s).
       Business: ${businesses || 'Aucun'}.
@@ -65,9 +65,10 @@ export class GeminiService {
       9. Si 'breakup': Séparation ou divorce. Raisons variées (tromperie, manque d'argent, routine, famille). Doit inclure une conséquence sur la pension alimentaire si nécessaire.
       10. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
       11. Si 'child_event': Événement lié aux enfants (école, maladie, joie, enfant hors mariage).
-      12. Si 'random_event': Incident de la vie quotidienne à Babi.
-      13. Gère les relations secrètes (maîtresse/amant) : si le joueur est marié, une nouvelle relation amoureuse peut devenir une "maîtresse" ou un "amant". L'IA doit créer des défis autour de ce secret.
-      14. Retourne UNIQUEMENT du JSON.
+      12. Si 'random_event': Incident de la vie quotidienne à Babi (ex: coupure de courant de la CIE, inondation à Cocody, embouteillage monstre sur le pont, "travail de nuit").
+      13. Si actionType 'COMBINE': Propose une affaire louche (ex: faux billets, terrain litigieux, placement miracle). Doit être risqué (perte de réputation ou argent) mais très lucratif si ça marche.
+      14. Gère les relations secrètes (maîtresse/amant) : si le joueur est marié, une nouvelle relation amoureuse peut devenir une "maîtresse" ou un "amant". L'IA doit créer des défis autour de ce secret.
+      15. Retourne UNIQUEMENT du JSON.
     `;
 
     try {

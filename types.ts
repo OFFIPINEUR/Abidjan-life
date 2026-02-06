@@ -6,6 +6,9 @@ export interface Stats {
   looks: number;
   stress: number;
   money: number;
+  reputation: number;
+  performance: number;
+  networking: number;
 }
 
 export interface Company {
@@ -164,6 +167,7 @@ export interface GameState {
     inventory: InventoryItem[];
     businesses: Business[];
     investments: Investment[];
+    jobWarnings: number;
     settings?: {
       wallpaper: string;
     };
