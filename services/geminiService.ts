@@ -68,7 +68,9 @@ export class GeminiService {
       12. Si 'random_event': Incident de la vie quotidienne à Babi (ex: coupure de courant de la CIE, inondation à Cocody, embouteillage monstre sur le pont, "travail de nuit").
       13. Si actionType 'COMBINE': Propose une affaire louche (ex: faux billets, terrain litigieux, placement miracle). Doit être risqué (perte de réputation ou argent) mais très lucratif si ça marche.
       14. Gère les relations secrètes (maîtresse/amant) : si le joueur est marié, une nouvelle relation amoureuse peut devenir une "maîtresse" ou un "amant". L'IA doit créer des défis autour de ce secret.
-      15. Retourne UNIQUEMENT du JSON.
+      15. Lorsqu'une nouvelle rencontre est proposée (actionType 'NEW_RELATION' ou 'NEW_FRIEND'), tu DOIS obligatoirement fournir un 'characterName' (nom complet ivoirien comme 'Kouassi Kouamé', 'Moussa Traoré', 'Fatou Diabaté') et un 'characterGender' ('Homme' ou 'Femme').
+      16. Intègre des événements typiques : Saison des pluies (inondations, gbakas bloqués), Coupures CIE/SODECI (stress en hausse), Embouteillages du Plateau.
+      17. Retourne UNIQUEMENT du JSON.
     `;
 
     try {
@@ -85,7 +87,9 @@ export class GeminiService {
                   "text": "string",
                   "effect": { "health": number, "happiness": number, "smarts": number, "looks": number, "money": number, "stress": number },
                   "resultLog": "string",
-                  "actionType": "string"
+                  "actionType": "string",
+                  "characterName": "string (optionnel)",
+                  "characterGender": "string ('Homme' | 'Femme') (optionnel)"
                 }
               ]
             }`
