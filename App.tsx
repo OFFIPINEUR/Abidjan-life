@@ -229,6 +229,7 @@ const App: React.FC = () => {
   const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | 'politics' | 'settings' | null>(null);
   const [businessTab, setBusinessTab] = useState<'mine' | 'launch' | 'market' | 'invest'>('mine');
   const [currentEvent, setCurrentEvent] = useState<any>(null);
+  const [showMatch, setShowMatch] = useState<{ name: string, type: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [showRegister, setShowRegister] = useState(true);
@@ -326,7 +327,7 @@ const App: React.FC = () => {
 
   const findNewFriend = async () => {
     setLoading(true);
-    const event = await gemini.generateNarrative(gameState, 'social', `Le joueur cherche à se faire un nouvel ami garçon (frangin) pour le foot ou le maquis. Genre du joueur: ${gameState.player.gender}.`);
+    const event = await gemini.generateNarrative(gameState, 'social', `Le joueur cherche à se faire un nouvel ami (frangin) pour le foot ou le maquis. Présente son profil (nom, occupation, quartier, style). Genre du joueur: ${gameState.player.gender}.`);
     if (event) {
       event.choices = event.choices.map((c: any) => ({
         ...c,
@@ -728,7 +729,7 @@ const App: React.FC = () => {
 
   const findNewRelation = async () => {
     setLoading(true);
-    const event = await gemini.generateNarrative(gameState, 'dating', "Le joueur cherche à faire de nouvelles connaissances à Abidjan.");
+    const event = await gemini.generateNarrative(gameState, 'dating', "Le joueur cherche une rencontre amoureuse sur une application. Présente un profil détaillé (nom, âge, quartier, job, phrase d'accroche).");
     if (event) {
       event.choices = event.choices.map((c: any) => ({
         ...c,
@@ -1171,14 +1172,24 @@ const App: React.FC = () => {
       addLog(`❌ ÉCHEC : Ça n'a pas marché.`, 'negative');
     } else if (choice.actionType === 'NEW_RELATION' || choice.actionType === 'NEW_FRIEND') {
       const isFriend = choice.actionType === 'NEW_FRIEND';
+      const name = choice.characterName || (isFriend ? "Nouveau Frangin" : "Nouvelle Connaissance");
+      const type = isFriend ? 'Ami' : 'Amour';
       const newRel: Relationship = {
         id: Date.now().toString(),
-        name: choice.characterName || (isFriend ? "Nouveau Frangin" : "Nouvelle Connaissance"),
-        type: 'Ami',
+        name: name,
+        type: type as any,
         level: isFriend ? 25 : 20,
         gender: choice.characterGender || (isFriend ? 'Homme' : (Math.random() > 0.5 ? 'Homme' : 'Femme'))
       };
-      setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [...prev.player.relations, newRel] }}));
+      setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [newRel, ...prev.player.relations] }}));
+
+      if (!isFriend && (choice.text.toLowerCase().includes('matcher') || choice.text.toLowerCase().includes('oui') || choice.text.toLowerCase().includes('accepter'))) {
+        setShowMatch({ name, type: 'Love' });
+        setTimeout(() => setShowMatch(null), 3000);
+      } else if (isFriend) {
+        setShowMatch({ name, type: 'Frangin' });
+        setTimeout(() => setShowMatch(null), 3000);
+      }
     } else if (choice.actionType === 'BECOME_PARTNER' && choice.partnerId) {
       const hasSpouse = gameState.player.relations.some(r => r.isSpouse);
       const relType = hasSpouse ? (gameState.player.gender === 'Homme' ? 'Maîtresse' : 'Amant') : 'Petit(e) ami(e)';
@@ -1246,7 +1257,7 @@ const App: React.FC = () => {
       };
 
       setGameState(prev => {
-        const newRelations = [...prev.player.relations, newChild];
+        const newRelations = [newChild, ...prev.player.relations];
         if (isHorsMariage) {
           return {
             ...prev,
@@ -1631,8 +1642,32 @@ const App: React.FC = () => {
           <div ref={logEndRef} />
         </div>
 
+        {showMatch && (
+          <div className="absolute inset-0 z-[110] bg-rose-600/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
+             <div className="relative mb-8">
+                <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-2xl animate-elastic">
+                   <i className={`fa-solid ${showMatch.type === 'Love' ? 'fa-heart text-rose-500' : 'fa-handshake text-blue-500'} text-6xl`}></i>
+                </div>
+                <div className="absolute -top-2 -right-2 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                   <i className="fa-solid fa-star text-white"></i>
+                </div>
+             </div>
+             <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">
+                {showMatch.type === 'Love' ? "C'est un Match !" : "Nouveau Frangin !"}
+             </h2>
+             <p className="text-rose-100 text-lg font-bold italic mb-8">
+                {showMatch.name} vient d'être ajouté à tes contacts.
+             </p>
+             <div className="flex gap-2">
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-75"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-150"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-300"></div>
+             </div>
+          </div>
+        )}
+
         {currentEvent && (
-          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="absolute inset-0 z-[90] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-white w-full max-h-[90%] overflow-y-auto rounded-[2.5rem] p-8 shadow-2xl animate-elastic">
                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
                <h3 className="text-orange-600 text-xs font-black uppercase tracking-[0.2em] mb-4">Alerte Babi</h3>
