@@ -59,18 +59,19 @@ export class GeminiService {
       3. Si 'activity' avec contexte étude: Propose un challenge lié aux études à l'université ou grande école à Abidjan (ex: examen difficile, grève, fête étudiante, recherche de stage).
       4. Si 'shopping': Propose des articles (cadeaux, meubles, tel) à Abidjan. Boostent Looks, Santé ou Bonheur.
       5. Si 'interview': Simule une question cruciale liée au poste de ${state.player.job?.title || 'le poste visé'}. Un choix doit avoir actionType: 'HIRE', les autres 'FAIL'.
-      6. Si 'dating' ou 'social': Si c'est pour draguer, adapte selon le genre du joueur (${state.player.gender}) et de l'interlocuteur. Propose des choix pour séduire ou renforcer le lien.
-      7. Si 'marriage': Organisation du mariage ou demande. Coûts élevés (dot).
-      8. Si 'become_partner': Demande pour devenir petit(e) ami(e).
-      9. Si 'breakup': Séparation ou divorce. Raisons variées (tromperie, manque d'argent, routine, famille). Doit inclure une conséquence sur la pension alimentaire si nécessaire.
-      10. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
-      11. Si 'child_event': Événement lié aux enfants (école, maladie, joie, enfant hors mariage).
-      12. Si 'random_event': Incident de la vie quotidienne à Babi (ex: coupure de courant de la CIE, inondation à Cocody, embouteillage monstre sur le pont, "travail de nuit").
-      13. Si actionType 'COMBINE': Propose une affaire louche (ex: faux billets, terrain litigieux, placement miracle). Doit être risqué (perte de réputation ou argent) mais très lucratif si ça marche.
-      14. Gère les relations secrètes (maîtresse/amant) : si le joueur est marié, une nouvelle relation amoureuse peut devenir une "maîtresse" ou un "amant". L'IA doit créer des défis autour de ce secret.
-      15. Lorsqu'une nouvelle rencontre est proposée (actionType 'NEW_RELATION' ou 'NEW_FRIEND'), tu DOIS obligatoirement fournir un 'characterName' (nom complet ivoirien comme 'Kouassi Kouamé', 'Moussa Traoré', 'Fatou Diabaté') et un 'characterGender' ('Homme' ou 'Femme').
-      16. Intègre des événements typiques : Saison des pluies (inondations, gbakas bloqués), Coupures CIE/SODECI (stress en hausse), Embouteillages du Plateau.
-      17. Retourne UNIQUEMENT du JSON.
+      6. Si 'dating': Présente d'abord un "profil" de rencontre (Nom complet, Description physique, âge, quartier, occupation, phrase d'accroche). L'utilisateur doit avoir un choix pour "Matcher" (actionType: 'NEW_RELATION') ou "Passer" (actionType: 'FAIL').
+      7. Si 'social' pour une nouvelle rencontre: Présente une rencontre fortuite ou une présentation (Nom complet, description courte). L'utilisateur doit avoir un choix pour "Devenir Frangin" (actionType: 'NEW_FRIEND') ou "Décliner".
+      8. Si 'marriage': Organisation du mariage ou demande. Coûts élevés (dot).
+      9. Si 'become_partner': Demande pour devenir petit(e) ami(e).
+      10. Si 'breakup': Séparation ou divorce. Raisons variées (tromperie, manque d'argent, routine, famille). Doit inclure une conséquence sur la pension alimentaire si nécessaire.
+      11. Si 'business_event': Problème ou opportunité dans un de ses business (${businesses}).
+      12. Si 'child_event': Événement lié aux enfants (école, maladie, joie, enfant hors mariage).
+      13. Si 'random_event': Incident de la vie quotidienne à Babi (ex: coupure de courant de la CIE, inondation à Cocody, embouteillage monstre le pont).
+      14. Si actionType 'COMBINE': Propose une affaire louche (ex: faux billets, terrain litigieux, placement miracle). Doit être risqué (perte de réputation ou argent) mais très lucratif si ça marche.
+      15. Gère les relations secrètes (maîtresse/amant) : si le joueur est marié, une nouvelle relation amoureuse peut devenir une "maîtresse" ou un "amant". L'IA doit créer des défis autour de ce secret.
+      16. Lorsqu'une nouvelle rencontre est proposée (actionType 'NEW_RELATION' ou 'NEW_FRIEND'), tu DOIS obligatoirement fournir un 'characterName' (nom complet ivoirien comme 'Kouassi Kouamé', 'Moussa Traoré', 'Fatou Diabaté') et un 'characterGender' ('Homme' ou 'Femme').
+      17. Intègre des événements typiques : Saison des pluies (inondations, gbakas bloqués), Coupures CIE/SODECI (stress en hausse), Embouteillages du Plateau.
+      18. Retourne UNIQUEMENT du JSON.
     `;
 
     try {
