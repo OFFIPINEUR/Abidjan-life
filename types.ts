@@ -164,6 +164,9 @@ export interface GameState {
     inventory: InventoryItem[];
     businesses: Business[];
     investments: Investment[];
+    settings?: {
+      wallpaper: string;
+    };
   };
   marketBusinesses: Business[];
   banks: Bank[];
