@@ -3,8 +3,10 @@
 > vite
 
 
-  VITE v6.4.1  ready in 385 ms
+  VITE v6.4.1  ready in 334 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: http://192.168.0.2:3000/
-4:45:01 PM [vite] (client) hmr update /App.tsx
+8:49:01 AM [vite] (client) hmr update /App.tsx
+8:49:01 AM [vite] (client) hmr update /App.tsx
+8:49:11 AM [vite] (client) hmr update /App.tsx
