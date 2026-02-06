@@ -64,7 +64,14 @@ const GET_INITIAL_GAME_STATE = (banks: Bank[]): GameState => ({
     }
   },
   marketBusinesses: [],
-  banks: banks
+  banks: banks,
+  economy: {
+    baseFoodCost: 45000,
+    baseWaterCost: 4500,
+    basePowerCost: 12000,
+    baseChildCost: 30000,
+    inflationYearlyDone: false
+  }
 });
 
 const COMPANIES: Company[] = [
@@ -818,7 +825,7 @@ const App: React.FC = () => {
     const politicalFee = gameState.player.politicalState.membershipFee;
     const childrenCount = gameState.player.relations.filter(r => r.type === 'Enfant').length;
     const totalChildSupport = gameState.player.relations.reduce((acc, r) => acc + (r.childSupport || 0), 0);
-    const childExpenses = childrenCount * 30000;
+    const childExpenses = childrenCount * gameState.economy.baseChildCost;
     const livingWithPartner = gameState.player.relations.some(r => r.livingTogether);
     const rentExpenses = gameState.player.assets.properties.filter(p => p.type === 'RENT').reduce((acc, p) => acc + p.monthlyCost, 0);
 
@@ -826,10 +833,11 @@ const App: React.FC = () => {
     // Pour simplifier, on réduit un peu le loyer si on vit ensemble
     const finalRentExpenses = livingWithPartner ? rentExpenses * 0.7 : rentExpenses;
 
+    const totalGrossIncome = (gameState.player.job?.salary || 0) + businessIncome + investmentIncome + politicalIncome;
+    const incomeTax = totalGrossIncome > 0 ? Math.round(totalGrossIncome * 0.05) : 0;
+
     // Nouvelles dépenses (Difficulté accrue)
-    const baseFoodCost = 45000; // Popote de base
-    const baseWaterCost = 4500; // SODECI
-    const basePowerCost = 12000; // CIE
+    const { baseFoodCost, baseWaterCost, basePowerCost, baseChildCost } = gameState.economy;
 
     const primaryResidence = gameState.player.assets.properties[0];
     const neighborhood = NEIGHBORHOODS.find(n => n.name === primaryResidence?.location);
@@ -866,6 +874,9 @@ const App: React.FC = () => {
     const event = await gemini.generateNarrative(gameState, eventType, 
       `${gameState.player.job ? `Challenge lié au poste de ${gameState.player.job.title}.` : ""} Contexte : ${randomAmbiance}`
     );
+
+    const shouldTriggerInflation = !gameState.economy.inflationYearlyDone && (Math.random() > 0.85 || nextMonthIndex === 11);
+    const shouldTriggerCreep = totalGrossIncome > 500000 && Math.random() > 0.9;
     
     setGameState(prev => {
       const monthlySalary = prev.player.job?.salary || 0;
@@ -875,7 +886,26 @@ const App: React.FC = () => {
         remainingAmount: l.remainingAmount - l.monthlyPayment
       })).filter(l => l.monthsRemaining > 0);
 
-      const netIncome = monthlySalary + businessIncome + investmentIncome + politicalIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport - politicalFee - totalMonthlyExpenses;
+      const netIncome = monthlySalary + businessIncome + investmentIncome + politicalIncome - incomeTax - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport - politicalFee - totalMonthlyExpenses;
+
+      let newEconomy = { ...prev.economy };
+      if (nextMonthIndex === 0) newEconomy.inflationYearlyDone = false;
+
+      if (shouldTriggerInflation) {
+        newEconomy.baseFoodCost = Math.round(newEconomy.baseFoodCost * 1.05);
+        newEconomy.baseWaterCost = Math.round(newEconomy.baseWaterCost * 1.05);
+        newEconomy.basePowerCost = Math.round(newEconomy.basePowerCost * 1.05);
+        newEconomy.baseChildCost = Math.round(newEconomy.baseChildCost * 1.05);
+        newEconomy.inflationYearlyDone = true;
+      }
+
+      if (shouldTriggerCreep) {
+        const creepRate = 1 + (Math.random() * 0.02);
+        newEconomy.baseFoodCost = Math.round(newEconomy.baseFoodCost * creepRate);
+        newEconomy.baseWaterCost = Math.round(newEconomy.baseWaterCost * creepRate);
+        newEconomy.basePowerCost = Math.round(newEconomy.basePowerCost * creepRate);
+        newEconomy.baseChildCost = Math.round(newEconomy.baseChildCost * creepRate);
+      }
 
       const updatedInvestments = prev.player.investments.map(inv => {
         if (inv.type === 'STOCK') {
@@ -906,8 +936,16 @@ const App: React.FC = () => {
       const isStudyingAndWorking = prev.player.job && prev.player.educationState.currentDegree;
       const politicalPrestigeBonus = prev.player.politicalState.rank === 'Maire' ? 5 : (prev.player.politicalState.rank === 'Député' ? 8 : 0);
 
+      const updatedProperties = prev.player.assets.properties.map(p => {
+        if (p.type === 'RENT' && shouldTriggerInflation) {
+          return { ...p, monthlyCost: p.monthlyCost + 1000 };
+        }
+        return p;
+      });
+
       return {
         ...prev,
+        economy: newEconomy,
         player: {
           ...prev.player,
           age: nextAge,
@@ -917,6 +955,10 @@ const App: React.FC = () => {
           investments: updatedInvestments,
           education: completedDegreeName || prev.player.education,
           educationState: newEduState,
+          assets: {
+            ...prev.player.assets,
+            properties: updatedProperties
+          },
           stats: {
             ...prev.player.stats,
             money: prev.player.stats.money + netIncome,
@@ -1016,6 +1058,19 @@ const App: React.FC = () => {
 
     if (totalChildSupport > 0) {
       addLog(`🍼 PENSION : -${totalChildSupport.toLocaleString()} FCFA de pension alimentaire.`, 'negative');
+    }
+
+    if (incomeTax > 0) {
+      addLog(`⚖️ IMPÔTS : -${incomeTax.toLocaleString()} FCFA (Prélèvement de 5% sur tes revenus)`, 'negative');
+    }
+
+    if (shouldTriggerInflation) {
+      addLog("📢 COMMUNIQUÉ : Le gouvernement annonce une augmentation généralisée des prix (Inflation).", "negative");
+      addLog("🏠 LOYER : Tes loyers ont augmenté de 1.000 FCFA.", "negative");
+    }
+
+    if (shouldTriggerCreep) {
+      addLog("💅 TRAIN DE VIE : Tes dépenses augmentent avec ton nouveau statut social.", "negative");
     }
 
     refreshMarket();
@@ -2506,6 +2561,25 @@ const App: React.FC = () => {
                       </div>
                    </div>
                 )}
+
+                {/* Coût de la vie */}
+                <div className="space-y-3">
+                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Coût de la Vie</p>
+                   <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl space-y-2 shadow-sm mx-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase">Popote (Base)</span>
+                        <span className="text-xs font-black text-slate-900">{gameState.economy.baseFoodCost.toLocaleString()} FCFA</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-slate-50 pt-2">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase">Factures (Base)</span>
+                        <span className="text-xs font-black text-slate-900">{(gameState.economy.baseWaterCost + gameState.economy.basePowerCost).toLocaleString()} FCFA</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-slate-50 pt-2">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase">Impôt sur le Revenu</span>
+                        <span className="text-xs font-black text-rose-600">5%</span>
+                      </div>
+                   </div>
+                </div>
 
                 {/* Banque */}
                 <div className="space-y-3">

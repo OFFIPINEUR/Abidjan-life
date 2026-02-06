@@ -143,6 +143,14 @@ export interface Bank {
   minCreditScore: number;
 }
 
+export interface EconomyState {
+  baseFoodCost: number;
+  baseWaterCost: number;
+  basePowerCost: number;
+  baseChildCost: number;
+  inflationYearlyDone: boolean;
+}
+
 export interface GameState {
   isRegistered: boolean;
   timer: number;
@@ -175,4 +183,5 @@ export interface GameState {
   };
   marketBusinesses: Business[];
   banks: Bank[];
+  economy: EconomyState;
 }
