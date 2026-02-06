@@ -822,6 +822,20 @@ const App: React.FC = () => {
     // Pour simplifier, on réduit un peu le loyer si on vit ensemble
     const finalRentExpenses = livingWithPartner ? rentExpenses * 0.7 : rentExpenses;
 
+    // Nouvelles dépenses (Difficulté accrue)
+    const baseFoodCost = 45000; // Popote de base
+    const baseWaterCost = 4500; // SODECI
+    const basePowerCost = 12000; // CIE
+
+    const primaryResidence = gameState.player.assets.properties[0];
+    const neighborhood = NEIGHBORHOODS.find(n => n.name === primaryResidence?.location);
+    const prestigeMultiplier = neighborhood ? (1 + neighborhood.prestige / 100) : 1;
+
+    const foodExpense = Math.round(baseFoodCost * (1 + (childrenCount * 0.4) + (livingWithPartner ? 0.6 : 0)));
+    const waterExpense = Math.round(baseWaterCost * prestigeMultiplier * (1 + (childrenCount * 0.15)));
+    const powerExpense = Math.round(basePowerCost * prestigeMultiplier * (1 + (childrenCount * 0.15)));
+    const totalMonthlyExpenses = foodExpense + waterExpense + powerExpense;
+
     let eventType: any = 'yearly';
     if (hasActiveLoans && Math.random() > 0.8) {
       eventType = 'debt_event';
@@ -833,8 +847,20 @@ const App: React.FC = () => {
       eventType = 'job_challenge';
     }
     
+    // Ajout d'ambiance Abidjanaise aléatoire
+    const ambiances = [
+      "C'est la saison des pluies, Abidjan est sous l'eau.",
+      "Coupure générale de la CIE, il fait chaud deh.",
+      "Embouteillages monstres sur le troisième pont.",
+      "Le quartier est animé, c'est l'anniversaire d'un Vieux Père.",
+      "Grève des gbakas, c'est compliqué pour circuler.",
+      "Surchauffe à la SODECI, plus d'eau dans les robinets.",
+      "Mois tranquille à Babi."
+    ];
+    const randomAmbiance = ambiances[Math.floor(Math.random() * ambiances.length)];
+
     const event = await gemini.generateNarrative(gameState, eventType, 
-      gameState.player.job ? `Challenge lié au poste de ${gameState.player.job.title}.` : "Mois tranquille à Babi."
+      `${gameState.player.job ? `Challenge lié au poste de ${gameState.player.job.title}.` : ""} Contexte : ${randomAmbiance}`
     );
     
     setGameState(prev => {
@@ -845,7 +871,7 @@ const App: React.FC = () => {
         remainingAmount: l.remainingAmount - l.monthlyPayment
       })).filter(l => l.monthsRemaining > 0);
 
-      const netIncome = monthlySalary + businessIncome + investmentIncome + politicalIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport - politicalFee;
+      const netIncome = monthlySalary + businessIncome + investmentIncome + politicalIncome - totalMonthlyLoanPayment - childExpenses - finalRentExpenses - totalChildSupport - politicalFee - totalMonthlyExpenses;
 
       const updatedInvestments = prev.player.investments.map(inv => {
         if (inv.type === 'STOCK') {
@@ -890,10 +916,10 @@ const App: React.FC = () => {
           stats: {
             ...prev.player.stats,
             money: prev.player.stats.money + netIncome,
-            health: Math.min(100, Math.max(0, prev.player.stats.health + healthBonus - (prev.player.age > 40 && nextMonthIndex === 0 ? 3 : 0) - (isStudyingAndWorking ? 8 : 0))),
+            health: Math.min(100, Math.max(0, prev.player.stats.health + healthBonus - (prev.player.age > 40 && nextMonthIndex === 0 ? 5 : 0) - (isStudyingAndWorking ? 12 : 0))),
             happiness: Math.min(100, prev.player.stats.happiness + happyBonus),
             looks: Math.min(100, prev.player.stats.looks + politicalPrestigeBonus),
-            stress: Math.max(0, Math.min(100, prev.player.stats.stress + (prev.player.job ? 2 : 0) + (hasActiveLoans ? 5 : -5) + (childrenCount * 2) + (isStudyingAndWorking ? 15 : 0)))
+            stress: Math.max(0, Math.min(100, prev.player.stats.stress + (prev.player.job ? 4 : 0) + (hasActiveLoans ? 8 : -5) + (childrenCount * 3) + (isStudyingAndWorking ? 20 : 0)))
           }
         }
       };
@@ -972,6 +998,9 @@ const App: React.FC = () => {
     if (totalMonthlyLoanPayment > 0) {
       addLog(`📉 PRÉLÈVEMENT BANCAIRE : -${totalMonthlyLoanPayment.toLocaleString()} FCFA (Remboursement prêt)`, 'negative');
     }
+
+    addLog(`🍲 POPOTE : -${foodExpense.toLocaleString()} FCFA (Nourriture)`, 'negative');
+    addLog(`⚡ CIE/SODECI : -${(powerExpense + waterExpense).toLocaleString()} FCFA (Factures)`, 'negative');
 
     if (childExpenses > 0) {
       addLog(`🍼 ENFANTS : -${childExpenses.toLocaleString()} FCFA de frais de scolarité et santé.`, 'negative');
@@ -1140,22 +1169,14 @@ const App: React.FC = () => {
       setActiveTab('vie');
     } else if (choice.actionType === 'FAIL') {
       addLog(`❌ ÉCHEC : Ça n'a pas marché.`, 'negative');
-    } else if (choice.actionType === 'NEW_RELATION') {
+    } else if (choice.actionType === 'NEW_RELATION' || choice.actionType === 'NEW_FRIEND') {
+      const isFriend = choice.actionType === 'NEW_FRIEND';
       const newRel: Relationship = {
         id: Date.now().toString(),
-        name: choice.resultLog.split(' ')[0] || "Nouvelle Connaissance",
+        name: choice.characterName || (isFriend ? "Nouveau Frangin" : "Nouvelle Connaissance"),
         type: 'Ami',
-        level: 20,
-        gender: Math.random() > 0.5 ? 'Homme' : 'Femme'
-      };
-      setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [...prev.player.relations, newRel] }}));
-    } else if (choice.actionType === 'NEW_FRIEND') {
-      const newRel: Relationship = {
-        id: Date.now().toString(),
-        name: choice.resultLog.split(' ')[0] || "Nouveau Frangin",
-        type: 'Ami',
-        level: 25,
-        gender: 'Homme'
+        level: isFriend ? 25 : 20,
+        gender: choice.characterGender || (isFriend ? 'Homme' : (Math.random() > 0.5 ? 'Homme' : 'Femme'))
       };
       setGameState(prev => ({ ...prev, player: { ...prev.player, relations: [...prev.player.relations, newRel] }}));
     } else if (choice.actionType === 'BECOME_PARTNER' && choice.partnerId) {
