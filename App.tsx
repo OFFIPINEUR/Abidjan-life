@@ -45,7 +45,10 @@ const GET_INITIAL_GAME_STATE = (banks: Bank[]): GameState => ({
     logs: [],
     inventory: [],
     businesses: [],
-    investments: []
+    investments: [],
+    settings: {
+      wallpaper: WALLPAPERS[0]
+    }
   },
   marketBusinesses: [],
   banks: banks
@@ -174,6 +177,14 @@ const BANKS: Bank[] = [
   { id: 'b4', name: "BACI (Banque Atlantique)", interestRate: 0.11, minSalary: 150000, requireCDI: false, minCreditScore: 0 }
 ];
 
+const WALLPAPERS = [
+  "bg-gradient-to-br from-blue-500 to-indigo-700",
+  "bg-gradient-to-br from-orange-400 to-rose-600",
+  "bg-gradient-to-br from-slate-800 to-slate-950",
+  "bg-gradient-to-br from-emerald-400 to-teal-700",
+  "bg-gradient-to-br from-fuchsia-500 to-purple-800"
+];
+
 const BUSINESS_CONFIG: Record<string, { baseCost: number, baseRevenue: number }> = {
   'Kbine': { baseCost: 100000, baseRevenue: 15000 },
   'Kiosque': { baseCost: 300000, baseRevenue: 40000 },
@@ -188,6 +199,14 @@ const BUSINESS_CONFIG: Record<string, { baseCost: number, baseRevenue: number }>
 
 const SAVE_KEY = 'abidjan_life_save_v1';
 
+interface UIFeedback {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  color: string;
+}
+
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [showStartMenu, setShowStartMenu] = useState(false);
@@ -195,12 +214,13 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GET_INITIAL_GAME_STATE(BANKS));
 
   const [activeTab, setActiveTab] = useState<'vie' | 'travail' | 'social' | 'patrimoine' | 'activites' | 'boutique' | 'smartphone' | 'smartphone_app'>('vie');
-  const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | 'politics' | null>(null);
+  const [selectedApp, setSelectedApp] = useState<'bank' | 'business' | 'dating' | 'politics' | 'settings' | null>(null);
   const [businessTab, setBusinessTab] = useState<'mine' | 'launch' | 'market' | 'invest'>('mine');
   const [currentEvent, setCurrentEvent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [showRegister, setShowRegister] = useState(true);
+  const [feedbacks, setFeedbacks] = useState<UIFeedback[]>([]);
   const logEndRef = useRef<HTMLDivElement>(null);
   const gemini = new GeminiService();
 
@@ -325,16 +345,16 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
-  const buyFurniture = (furniture: any, propertyId: string) => {
+  const buyFurniture = (furniture: any, propertyId: string, e?: React.MouseEvent) => {
     if (gameState.player.stats.money < furniture.price) {
       addLog("Pas assez d'argent pour ce meuble !", "negative");
       return;
     }
+    updateStats({ money: -furniture.price }, e?.clientX, e?.clientY);
     setGameState(prev => ({
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - furniture.price },
         assets: {
           ...prev.player.assets,
           properties: prev.player.assets.properties.map(p =>
@@ -346,11 +366,12 @@ const App: React.FC = () => {
     addLog(`🛋️ ACHAT : ${furniture.name} ajouté à ta maison.`, "positive");
   };
 
-  const buyVehicle = (vehicle: any) => {
+  const buyVehicle = (vehicle: any, e?: React.MouseEvent) => {
     if (gameState.player.stats.money < vehicle.price) {
       addLog("Pas assez d'argent pour ce véhicule !", "negative");
       return;
     }
+    updateStats({ money: -vehicle.price, looks: Math.round(vehicle.prestige/5) }, e?.clientX, e?.clientY);
     setGameState(prev => {
       const newBusinesses = [...prev.player.businesses];
       if (vehicle.isBusiness) {
@@ -366,7 +387,6 @@ const App: React.FC = () => {
         ...prev,
         player: {
           ...prev.player,
-          stats: { ...prev.player.stats, money: prev.player.stats.money - vehicle.price, looks: prev.player.stats.looks + Math.round(vehicle.prestige/5) },
           assets: {
             ...prev.player.assets,
             vehicles: [...prev.player.assets.vehicles, { ...vehicle }]
@@ -378,12 +398,13 @@ const App: React.FC = () => {
     addLog(`🚗 ACHAT : ${vehicle.name} acquis ! ${vehicle.isBusiness ? 'Le business tourne déjà.' : ''}`, "positive");
   };
 
-  const buyHouse = (neighborhood: any, type: 'RENT' | 'OWN') => {
+  const buyHouse = (neighborhood: any, type: 'RENT' | 'OWN', e?: React.MouseEvent) => {
     const price = type === 'OWN' ? neighborhood.basePrice : neighborhood.rent;
     if (gameState.player.stats.money < price) {
       addLog("Pas assez d'argent !", "negative");
       return;
     }
+    updateStats({ money: -price, happiness: 20 }, e?.clientX, e?.clientY);
     const newProperty: Property = {
       id: Date.now().toString(),
       name: `Maison à ${neighborhood.name}`,
@@ -397,7 +418,6 @@ const App: React.FC = () => {
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - price, happiness: prev.player.stats.happiness + 20 },
         assets: {
           ...prev.player.assets,
           properties: [...prev.player.assets.properties, newProperty]
@@ -407,7 +427,7 @@ const App: React.FC = () => {
     addLog(`🏠 LOGEMENT : Tu as emménagé à ${neighborhood.name} (${type === 'OWN' ? 'Propriétaire' : 'Locataire'}).`, "positive");
   };
 
-  const launchBusiness = (type: any, neighborhoodName: string) => {
+  const launchBusiness = (type: any, neighborhoodName: string, e?: React.MouseEvent) => {
     const neighborhood = NEIGHBORHOODS.find(n => n.name === neighborhoodName) || NEIGHBORHOODS[0];
     const config = BUSINESS_CONFIG[type];
 
@@ -419,6 +439,8 @@ const App: React.FC = () => {
       addLog(`Pas assez d'argent pour lancer ce business à ${neighborhoodName} (${cost.toLocaleString()} FCFA nécessaires)`, "negative");
       return;
     }
+
+    updateStats({ money: -cost, stress: 15 }, e?.clientX, e?.clientY);
 
     const newBusiness: Business = {
       id: Date.now().toString(),
@@ -434,7 +456,6 @@ const App: React.FC = () => {
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - cost, stress: prev.player.stats.stress + 15 },
         businesses: [...prev.player.businesses, newBusiness]
       }
     }));
@@ -467,17 +488,18 @@ const App: React.FC = () => {
     setGameState(prev => ({ ...prev, marketBusinesses: newList }));
   };
 
-  const buyMarketBusiness = (business: Business) => {
+  const buyMarketBusiness = (business: Business, e?: React.MouseEvent) => {
     if (gameState.player.stats.money < business.investment) {
       addLog("Pas assez d'argent pour racheter ce business !", "negative");
       return;
     }
 
+    updateStats({ money: -business.investment, stress: 10 }, e?.clientX, e?.clientY);
+
     setGameState(prev => ({
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - business.investment, stress: prev.player.stats.stress + 10 },
         businesses: [...prev.player.businesses, { ...business, id: Date.now().toString() }]
       },
       marketBusinesses: prev.marketBusinesses.filter(b => b.id !== business.id)
@@ -485,7 +507,7 @@ const App: React.FC = () => {
     addLog(`💼 RACHAT : Tu as racheté ${business.name} à ${business.location} !`, "positive");
   };
 
-  const expandBusiness = (businessId: string) => {
+  const expandBusiness = (businessId: string, e?: React.MouseEvent) => {
     const business = gameState.player.businesses.find(b => b.id === businessId);
     if (!business) return;
 
@@ -495,11 +517,12 @@ const App: React.FC = () => {
       return;
     }
 
+    updateStats({ money: -expansionCost, stress: 5 }, e?.clientX, e?.clientY);
+
     setGameState(prev => ({
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - expansionCost, stress: prev.player.stats.stress + 5 },
         businesses: prev.player.businesses.map(b =>
           b.id === businessId
             ? { ...b, level: b.level + 1, monthlyRevenue: Math.round(b.monthlyRevenue * 1.4) }
@@ -510,11 +533,13 @@ const App: React.FC = () => {
     addLog(`📈 EXPANSION : ${business.name} est passé au niveau ${business.level + 1} !`, "positive");
   };
 
-  const investMoney = (type: 'SAVINGS' | 'STOCK' | 'REAL_ESTATE', amount: number) => {
+  const investMoney = (type: 'SAVINGS' | 'STOCK' | 'REAL_ESTATE', amount: number, e?: React.MouseEvent) => {
     if (gameState.player.stats.money < amount) {
       addLog("Pas assez d'argent pour cet investissement !", "negative");
       return;
     }
+
+    updateStats({ money: -amount }, e?.clientX, e?.clientY);
 
     let yieldRate = 0;
     let name = "";
@@ -542,23 +567,22 @@ const App: React.FC = () => {
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - amount },
         investments: [...prev.player.investments, newInvestment]
       }
     }));
     addLog(`🏦 INVESTISSEMENT : Tu as placé ${amount.toLocaleString()} FCFA en ${name}.`, "positive");
   };
 
-  const buyItem = (item: any) => {
+  const buyItem = (item: any, e?: React.MouseEvent) => {
     if (gameState.player.stats.money < item.price) {
       addLog("Pas assez d'argent !", "negative");
       return;
     }
+    updateStats({ money: -item.price }, e?.clientX, e?.clientY);
     setGameState(prev => ({
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - item.price },
         inventory: [...prev.player.inventory, { id: Date.now().toString(), name: item.name, type: item.type, value: item.price }]
       }
     }));
@@ -664,7 +688,24 @@ const App: React.FC = () => {
     }));
   };
 
-  const updateStats = (diff: Partial<Stats>) => {
+  const addFeedback = (text: string, x: number, y: number, color: string) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setFeedbacks(prev => [...prev, { id, text, x, y, color }]);
+    setTimeout(() => {
+      setFeedbacks(prev => prev.filter(f => f.id !== id));
+    }, 1500);
+  };
+
+  const updateStats = (diff: Partial<Stats>, x?: number, y?: number) => {
+    if (x && y) {
+      if (diff.health) addFeedback(`${diff.health > 0 ? '+' : ''}${diff.health} Santé`, x, y - 20, diff.health > 0 ? 'text-rose-500' : 'text-rose-700');
+      if (diff.happiness) addFeedback(`${diff.happiness > 0 ? '+' : ''}${diff.happiness} Joie`, x + 20, y, diff.happiness > 0 ? 'text-amber-500' : 'text-amber-700');
+      if (diff.money) addFeedback(`${diff.money > 0 ? '+' : ''}${diff.money.toLocaleString()} FCFA`, x, y + 20, diff.money > 0 ? 'text-emerald-500' : 'text-rose-500');
+      if (diff.stress) addFeedback(`${diff.stress > 0 ? '+' : ''}${diff.stress} Stress`, x - 20, y, diff.stress > 0 ? 'text-orange-500' : 'text-blue-500');
+      if (diff.smarts) addFeedback(`${diff.smarts > 0 ? '+' : ''}${diff.smarts} Smarts`, x, y, 'text-sky-500');
+      if (diff.looks) addFeedback(`${diff.looks > 0 ? '+' : ''}${diff.looks} Looks`, x, y, 'text-fuchsia-500');
+    }
+
     setGameState(prev => ({
       ...prev,
       player: {
@@ -894,7 +935,7 @@ const App: React.FC = () => {
     addLog(`🏦 PRÊT ACCORDÉ : ${bank.name} t'a versé ${amount.toLocaleString()} FCFA.`, 'positive');
   };
 
-  const enrollDegree = (degree: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification', specialty: string) => {
+  const enrollDegree = (degree: 'BTS' | 'Licence' | 'Master' | 'Doctorat' | 'Certification', specialty: string, e?: React.MouseEvent) => {
     const fees = { 'Certification': 50000, 'BTS': 100000, 'Licence': 200000, 'Master': 500000, 'Doctorat': 1000000 };
     const fee = fees[degree];
 
@@ -912,11 +953,12 @@ const App: React.FC = () => {
       return;
     }
 
+    updateStats({ money: -fee }, e?.clientX, e?.clientY);
+
     setGameState(prev => ({
       ...prev,
       player: {
         ...prev.player,
-        stats: { ...prev.player.stats, money: prev.player.stats.money - fee },
         educationState: {
           ...prev.player.educationState,
           currentDegree: degree,
@@ -963,8 +1005,8 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
-  const handleChoice = (choice: any) => {
-    updateStats(choice.effect);
+  const handleChoice = (choice: any, e?: React.MouseEvent) => {
+    updateStats(choice.effect, e?.clientX, e?.clientY);
 
     if (choice.actionType === 'HIRE' && choice.jobToApply) {
       setGameState(prev => ({ ...prev, player: { ...prev.player, job: choice.jobToApply }}));
@@ -1113,12 +1155,12 @@ const App: React.FC = () => {
     setCurrentEvent(null);
   };
 
-  const sleepAction = () => {
-    updateStats({ stress: -10, health: 5 });
+  const sleepAction = (e: React.MouseEvent) => {
+    updateStats({ stress: -10, health: 5 }, e.clientX, e.clientY);
     addLog("🛌 REPOS : Une bonne sieste ça fait du bien ! Ton stress diminue.", "positive");
   };
 
-  const takeRestActivity = (type: 'Spa' | 'Vacances') => {
+  const takeRestActivity = (type: 'Spa' | 'Vacances', e: React.MouseEvent) => {
     const cost = type === 'Spa' ? 50000 : 300000;
     if (gameState.player.stats.money < cost) {
       addLog("Pas assez d'argent !", "negative");
@@ -1126,10 +1168,10 @@ const App: React.FC = () => {
     }
 
     if (type === 'Spa') {
-      updateStats({ money: -cost, health: 15, stress: -25, happiness: 10 });
+      updateStats({ money: -cost, health: 15, stress: -25, happiness: 10 }, e.clientX, e.clientY);
       addLog("🧖 SPA : Un massage à la bougie... Tu es tout neuf !", "positive");
     } else {
-      updateStats({ money: -cost, health: 30, stress: -60, happiness: 50 });
+      updateStats({ money: -cost, health: 30, stress: -60, happiness: 50 }, e.clientX, e.clientY);
       addLog("🏝️ VACANCES : Un séjour de rêve à Assinie ! Tu es regonflé à bloc.", "positive");
     }
   };
@@ -1216,6 +1258,8 @@ const App: React.FC = () => {
     if (event) setCurrentEvent(event);
     setLoading(false);
   };
+
+  const isDarkMode = gameState.timer <= 90;
 
   if (showSplash) {
     return (
@@ -1316,6 +1360,15 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 font-sans w-full sm:max-w-md sm:mx-auto overflow-hidden shadow-2xl relative safe-top">
+      {feedbacks.map(f => (
+        <div
+          key={f.id}
+          className={`fixed z-[100] pointer-events-none font-black text-xs uppercase animate-float-up ${f.color}`}
+          style={{ left: f.x, top: f.y }}
+        >
+          {f.text}
+        </div>
+      ))}
       <div className="h-1.5 w-full bg-slate-900 overflow-hidden shrink-0 z-50">
         <div
           className="h-full bg-gradient-to-r from-orange-600 to-yellow-400 transition-all duration-1000 ease-linear"
@@ -1390,14 +1443,14 @@ const App: React.FC = () => {
         </div>
 
         {currentEvent && (
-          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-end p-4">
-            <div className="bg-white w-full max-h-full overflow-y-auto rounded-3xl p-8 shadow-2xl animate-in slide-in-from-bottom duration-500">
+          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-white w-full max-h-[90%] overflow-y-auto rounded-[2.5rem] p-8 shadow-2xl animate-elastic">
                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
                <h3 className="text-orange-600 text-xs font-black uppercase tracking-[0.2em] mb-4">Alerte Babi</h3>
                <p className="text-slate-900 font-bold text-xl leading-snug mb-8 italic">"{currentEvent.description}"</p>
                <div className="space-y-3">
                   {currentEvent.choices.map((c: any, i: number) => (
-                    <button key={i} onClick={() => handleChoice(c)} className="w-full text-left p-5 bg-slate-50 hover:bg-slate-100 border-2 border-slate-100 rounded-2xl text-slate-950 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-4 active:scale-95">
+                    <button key={i} onClick={(e) => handleChoice(c, e)} className="w-full text-left p-5 bg-slate-50 hover:bg-slate-100 border-2 border-slate-100 rounded-2xl text-slate-950 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-4 active:scale-95">
                       <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
                         <i className={`fa-solid ${c.actionType === 'HIRE' ? 'fa-check' : 'fa-chevron-right'} text-[10px] text-orange-600`}></i>
                       </div>
@@ -1454,7 +1507,7 @@ const App: React.FC = () => {
                   </div>
                 </button>
                 <button
-                  onClick={sleepAction}
+                  onClick={(e) => sleepAction(e)}
                   className="flex-none w-[50%] bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex flex-col items-center justify-center gap-2 active:scale-95 transition-all"
                 >
                   <i className="fa-solid fa-bed text-2xl"></i>
@@ -1464,7 +1517,7 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'travail' && (
-              <div className="space-y-6">
+              <div className="space-y-6 animate-in slide-in-from-right duration-300">
                 <div className="flex justify-between items-center px-1">
                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Ton Emploi Actuel</p>
                    {gameState.player.job && (
@@ -1514,7 +1567,7 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'social' && (
-               <div className="space-y-4 pb-10">
+               <div className="space-y-4 pb-10 animate-in slide-in-from-right duration-300">
                   <div className="flex justify-between items-center px-1">
                     <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Tes Relations</h3>
                     <div className="flex gap-2">
@@ -1584,7 +1637,7 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'activites' && (
-               <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2">
+               <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar pb-2 animate-in slide-in-from-right duration-300">
                  <button onClick={() => setActiveTab('boutique')} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-orange-50 rounded-2xl border-2 border-orange-100 active:scale-95 transition-all">
                     <i className="fa-solid fa-shop text-orange-600 text-2xl mb-1"></i>
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Boutique</span>
@@ -1598,15 +1651,15 @@ const App: React.FC = () => {
                     <span className="text-[10px] font-black uppercase text-slate-900 text-center">Études</span>
                  </button>
                  {[
-                   { label: 'Spa', icon: 'fa-spa', color: 'text-teal-500', action: () => takeRestActivity('Spa') },
-                   { label: 'Vacances', icon: 'fa-umbrella-beach', color: 'text-blue-500', action: () => takeRestActivity('Vacances') },
+                   { label: 'Spa', icon: 'fa-spa', color: 'text-teal-500', action: (e: any) => takeRestActivity('Spa', e) },
+                   { label: 'Vacances', icon: 'fa-umbrella-beach', color: 'text-blue-500', action: (e: any) => takeRestActivity('Vacances', e) },
                    { label: 'Maquis', icon: 'fa-beer-mug-empty', color: 'text-amber-500', ctx: 'Activity: Maquis' },
                    { label: 'Gym', icon: 'fa-dumbbell', color: 'text-rose-500', ctx: 'Activity: Gym' },
                    { label: 'Clinique', icon: 'fa-hospital', color: 'text-emerald-500', ctx: 'Activity: Hospital' },
                    { label: 'Église', icon: 'fa-hands-praying', color: 'text-indigo-500', ctx: 'Activity: Church' }
                  ].map(act => (
                    act.action ? (
-                     <button key={act.label} onClick={act.action} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
+                     <button key={act.label} onClick={(e) => act.action(e)} className="flex-none w-24 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 active:scale-95 transition-all">
                        <i className={`fa-solid ${act.icon} ${act.color} text-2xl mb-1`}></i>
                        <span className="text-[10px] font-black uppercase text-slate-900 text-center">{act.label}</span>
                      </button>
@@ -1630,7 +1683,7 @@ const App: React.FC = () => {
                    <div className="space-y-2">
                      <p className="text-[9px] font-black text-slate-400 uppercase px-1">Téléphones & Gadgets</p>
                      <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
-                       <button onClick={() => buyItem({name: "Smartphone Android", price: 120000, type: "Phone"})} className="flex-none w-[200px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
+                       <button onClick={(e) => buyItem({name: "Smartphone Android", price: 120000, type: "Phone"}, e)} className="flex-none w-[200px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
                           <span className="text-sm font-bold">Smartphone Android</span>
                           <span className="text-xs font-black text-emerald-600">120.000 FCFA</span>
                        </button>
@@ -1640,7 +1693,7 @@ const App: React.FC = () => {
                      <p className="text-[9px] font-black text-slate-400 uppercase px-1">Cadeaux</p>
                      <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
                        {GIFTS.map(g => (
-                         <button key={g.id} onClick={() => buyItem({name: g.name, price: g.price, type: "Gift"})} className="flex-none w-[180px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
+                         <button key={g.id} onClick={(e) => buyItem({name: g.name, price: g.price, type: "Gift"}, e)} className="flex-none w-[180px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4">
                             <span className="text-sm font-bold leading-tight">{g.name}</span>
                             <span className="text-xs font-black text-emerald-600">{g.price.toLocaleString()} FCFA</span>
                          </button>
@@ -1655,7 +1708,7 @@ const App: React.FC = () => {
                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-2 border-orange-500 pl-2 ml-1">{dealer}</h4>
                           <div className="flex flex-row gap-3 overflow-x-auto no-scrollbar px-1">
                             {VEHICLES.filter(v => v.dealership === dealer).map(v => (
-                              <button key={v.id} onClick={() => buyVehicle(v)} className="flex-none w-[220px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4 shadow-sm active:scale-95 transition-all">
+                              <button key={v.id} onClick={(e) => buyVehicle(v, e)} className="flex-none w-[220px] flex flex-col justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl items-start gap-4 shadow-sm active:scale-95 transition-all">
                                  <div>
                                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">{v.brand}</p>
                                    <span className="text-sm font-black block leading-tight">{v.name}</span>
@@ -1676,44 +1729,108 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'smartphone' && (
-               <div className="absolute inset-0 bg-slate-900 p-8 flex flex-col overflow-y-auto">
-                  <div className="flex justify-between items-center mb-8 px-2">
-                    <span className="text-[10px] font-bold text-white">Orange CI</span>
-                    <span className="text-[10px] font-bold text-white">12:00</span>
+               <div className={`absolute inset-0 ${gameState.player.settings?.wallpaper || WALLPAPERS[0]} p-6 flex flex-col animate-in fade-in duration-500`}>
+                  {/* Status Bar */}
+                  <div className="flex justify-between items-center mb-10 px-4 pt-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-black text-white/90">Orange-CI</span>
+                      <i className="fa-solid fa-wifi text-[10px] text-white/80"></i>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <i className="fa-solid fa-signal text-[10px] text-white/80"></i>
+                      <i className="fa-solid fa-battery-three-quarters text-[12px] text-white/80"></i>
+                      <span className="text-[11px] font-black text-white/90">
+                        {Math.floor(gameState.timer / 60) + 12}:{(gameState.timer % 60).toString().padStart(2, '0')}
+                      </span>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-6">
-                     <button onClick={() => { setSelectedApp('bank'); setActiveTab('smartphone_app'); }} className="flex flex-col items-center gap-2">
-                        <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-building-columns text-white text-xl"></i></div>
-                        <span className="text-[9px] font-bold text-white uppercase">Banque</span>
-                     </button>
-                     <button onClick={() => { setSelectedApp('business'); setActiveTab('smartphone_app'); }} className="flex flex-col items-center gap-2">
-                        <div className="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-chart-line text-white text-xl"></i></div>
-                        <span className="text-[9px] font-bold text-white uppercase">Business</span>
-                     </button>
-                     <button onClick={() => { setSelectedApp('dating'); setActiveTab('smartphone_app'); }} className="flex flex-col items-center gap-2">
-                        <div className="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-heart text-white text-xl"></i></div>
-                        <span className="text-[9px] font-bold text-white uppercase">Rencontres</span>
-                     </button>
-                     <button onClick={() => { setSelectedApp('politics'); setActiveTab('smartphone_app'); }} className="flex flex-col items-center gap-2">
-                        <div className="w-14 h-14 bg-orange-600 rounded-2xl flex items-center justify-center shadow-lg"><i className="fa-solid fa-flag text-white text-xl"></i></div>
-                        <span className="text-[9px] font-bold text-white uppercase">Politique</span>
-                     </button>
+
+                  {/* App Grid */}
+                  <div className="grid grid-cols-4 gap-y-8 px-2">
+                     {[
+                       { id: 'bank', icon: 'fa-building-columns', label: 'Banque', color: 'bg-emerald-500' },
+                       { id: 'business', icon: 'fa-chart-line', label: 'Business', color: 'bg-blue-600' },
+                       { id: 'dating', icon: 'fa-heart', label: 'Love', color: 'bg-rose-500' },
+                       { id: 'politics', icon: 'fa-flag', label: 'Politique', color: 'bg-orange-600' },
+                       { id: 'settings', icon: 'fa-gear', label: 'Paramètres', color: 'bg-slate-600' }
+                     ].map(app => (
+                       <button
+                        key={app.id}
+                        onClick={() => { setSelectedApp(app.id as any); setActiveTab('smartphone_app'); }}
+                        className="flex flex-col items-center gap-2 group transition-all active:scale-90"
+                       >
+                          <div className={`w-14 h-14 ${app.color} rounded-[1.25rem] flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all border border-white/10`}>
+                            <i className={`fa-solid ${app.icon} text-white text-xl`}></i>
+                          </div>
+                          <span className="text-[10px] font-bold text-white uppercase tracking-tighter drop-shadow-md">{app.label}</span>
+                       </button>
+                     ))}
                   </div>
-                  <div className="mt-auto flex justify-center pb-4">
-                     <button onClick={() => setActiveTab('vie')} className="w-12 h-1 bg-white/20 rounded-full"></button>
+
+                  {/* Android Nav Bar */}
+                  <div className="mt-auto flex justify-around items-center pb-8 pt-4 border-t border-white/10 bg-black/10 backdrop-blur-sm -mx-6 px-6">
+                     <button onClick={() => setActiveTab('vie')} className="text-white/60 hover:text-white transition-colors">
+                        <i className="fa-solid fa-chevron-left text-lg"></i>
+                     </button>
+                     <button onClick={() => setActiveTab('vie')} className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+                        <i className="fa-solid fa-house text-sm"></i>
+                     </button>
+                     <button className="text-white/60">
+                        <i className="fa-solid fa-square text-lg"></i>
+                     </button>
                   </div>
                </div>
             )}
 
             {activeTab === 'smartphone_app' && (
-               <div className="absolute inset-0 bg-white p-6 flex flex-col overflow-hidden">
+               <div className={`absolute inset-0 ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'} p-6 flex flex-col overflow-hidden animate-in slide-in-from-right duration-300`}>
                   <div className="flex justify-between items-center mb-6">
-                    <button onClick={() => setActiveTab('smartphone')} className="text-slate-400"><i className="fa-solid fa-chevron-left"></i></button>
-                    <h3 className="text-sm font-black uppercase tracking-widest">{selectedApp === 'bank' ? 'BABI BANK' : selectedApp === 'business' ? 'BABI BIZ' : selectedApp === 'politics' ? 'BABI POLITIS' : 'BABI LOVE'}</h3>
+                    <button onClick={() => setActiveTab('smartphone')} className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}><i className="fa-solid fa-chevron-left text-lg"></i></button>
+                    <h3 className="text-sm font-black uppercase tracking-widest">
+                        {selectedApp === 'bank' ? 'BABI BANK' :
+                         selectedApp === 'business' ? 'BABI BIZ' :
+                         selectedApp === 'politics' ? 'BABI POLITIS' :
+                         selectedApp === 'settings' ? 'PARAMÈTRES' :
+                         'BABI LOVE'}
+                    </h3>
                     <div className="w-4"></div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto no-scrollbar">
+                    {selectedApp === 'settings' && (
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Fond d'écran</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {WALLPAPERS.map((wp, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setGameState(prev => ({
+                                                ...prev,
+                                                player: {
+                                                    ...prev.player,
+                                                    settings: { ...prev.player.settings, wallpaper: wp }
+                                                }
+                                            }))}
+                                            className={`h-24 rounded-2xl ${wp} border-4 transition-all ${gameState.player.settings?.wallpaper === wp ? 'border-orange-500 scale-105 shadow-lg' : 'border-transparent opacity-70'}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Thème Adaptatif</p>
+                                <div className={`p-4 rounded-2xl flex items-center justify-between ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <i className={`fa-solid ${isDarkMode ? 'fa-moon text-blue-400' : 'fa-sun text-orange-400'} text-xl`}></i>
+                                        <span className="text-xs font-black uppercase tracking-wider">{isDarkMode ? 'Mode Sombre' : 'Mode Clair'}</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold opacity-50 uppercase">{Math.floor(gameState.timer / 60) + 12}:{(gameState.timer % 60).toString().padStart(2, '0')}</span>
+                                </div>
+                                <p className="text-[9px] font-bold text-slate-500 italic">Le thème change automatiquement selon l'heure de la journée (timer).</p>
+                            </div>
+                        </div>
+                    )}
                     {selectedApp === 'politics' && (
                        <div className="space-y-6">
                           {!gameState.player.politicalState.partyId ? (
@@ -1725,9 +1842,9 @@ const App: React.FC = () => {
                                <p className="text-[10px] font-black text-slate-400 uppercase px-1">Choisir un parti</p>
                                <div className="space-y-3">
                                   {POLITICAL_PARTIES.map(party => (
-                                    <div key={party.id} className="p-4 bg-white border-2 border-slate-100 rounded-2xl flex justify-between items-center shadow-sm">
+                                    <div key={party.id} className={`p-4 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} border-2 rounded-2xl flex justify-between items-center shadow-sm`}>
                                        <div>
-                                          <p className="font-black text-slate-900">{party.name}</p>
+                                          <p className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{party.name}</p>
                                           <p className="text-[9px] text-slate-400 font-bold uppercase">{party.ideology}</p>
                                           <p className="text-[8px] text-orange-600 font-black uppercase mt-1">Smart Min: {party.entrySmarts}</p>
                                        </div>
@@ -1748,11 +1865,11 @@ const App: React.FC = () => {
                                </div>
 
                                <div className="grid grid-cols-2 gap-3">
-                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                  <div className={`p-4 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-100'} rounded-2xl border`}>
                                      <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Cotisation</p>
                                      <p className="text-sm font-black">-{gameState.player.politicalState.membershipFee.toLocaleString()} <small>FCFA/m</small></p>
                                   </div>
-                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                  <div className={`p-4 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-100'} rounded-2xl border`}>
                                      <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Prestige</p>
                                      <p className="text-sm font-black">+{gameState.player.politicalState.rank === 'Maire' ? 50 : gameState.player.politicalState.rank === 'Député' ? 70 : 10}</p>
                                   </div>
@@ -1792,7 +1909,7 @@ const App: React.FC = () => {
                     )}
                     {selectedApp === 'bank' && (
                       <div className="space-y-6">
-                         <div className="p-6 bg-slate-900 rounded-3xl text-white flex justify-between items-center">
+                         <div className={`p-6 ${isDarkMode ? 'bg-emerald-900/30 border border-emerald-500/30' : 'bg-slate-900'} rounded-3xl text-white flex justify-between items-center shadow-xl`}>
                             <div>
                               <p className="text-[10px] font-bold uppercase opacity-50 mb-1">Solde Total</p>
                               <p className="text-2xl font-black">{gameState.player.stats.money.toLocaleString()} FCFA</p>
@@ -1880,7 +1997,7 @@ const App: React.FC = () => {
                                         <p className="text-xs font-black text-emerald-600 mt-1">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
                                      </div>
                                      <button
-                                      onClick={() => expandBusiness(b.id)}
+                                      onClick={(e) => expandBusiness(b.id, e)}
                                       className="flex flex-col items-center bg-blue-50 text-blue-600 px-3 py-2 rounded-xl active:scale-90 transition-all group"
                                      >
                                        <i className="fa-solid fa-arrow-up-right-dots text-xs"></i>
@@ -1941,7 +2058,7 @@ const App: React.FC = () => {
                                         <p className="text-xs font-black text-emerald-600 mt-1">+{b.monthlyRevenue.toLocaleString()} FCFA/mois</p>
                                      </div>
                                      <button
-                                      onClick={() => buyMarketBusiness(b)}
+                                      onClick={(e) => buyMarketBusiness(b, e)}
                                       className="bg-orange-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase active:scale-95 transition-all"
                                      >
                                        {b.investment.toLocaleString()}
@@ -1973,8 +2090,8 @@ const App: React.FC = () => {
                                           {[100000, 500000, 1000000].map(amt => (
                                             <button
                                               key={amt}
-                                              onClick={() => investMoney(inv.type as any, amt)}
-                                              className="flex-1 bg-slate-50 hover:bg-slate-100 py-2 rounded-lg text-[9px] font-black text-slate-600 transition-all active:scale-95"
+                                              onClick={(e) => investMoney(inv.type as any, amt, e)}
+                                              className={`flex-1 ${isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-50 text-slate-600'} hover:opacity-80 py-2 rounded-lg text-[9px] font-black transition-all active:scale-95`}
                                             >
                                               {amt >= 1000000 ? (amt/1000000)+'M' : (amt/1000)+'k'}
                                             </button>
@@ -2021,7 +2138,7 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'patrimoine' && (
-              <div className="space-y-6 pb-10">
+              <div className="space-y-6 pb-10 animate-in slide-in-from-right duration-300">
                 <h3 className="text-slate-900 text-[10px] font-black uppercase tracking-widest px-1">Patrimoine & Business</h3>
 
                 {/* Propriétés */}
@@ -2111,7 +2228,7 @@ const App: React.FC = () => {
             {/* Modal Achat Maison / Meubler / Etudes */}
             {selectedPropertyId && (
               <div className="fixed inset-0 z-[70] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white w-full max-w-sm rounded-3xl p-6 overflow-y-auto max-h-[80vh]">
+                <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 overflow-y-auto max-h-[85vh] animate-elastic shadow-2xl">
                    <div className="flex justify-between items-center mb-6">
                      <h4 className="text-sm font-black uppercase tracking-widest">
                        {selectedPropertyId === 'new' ? 'Nouveau Logement' :
@@ -2158,7 +2275,8 @@ const App: React.FC = () => {
                                     className="w-full bg-slate-100 border-none p-2 rounded-lg text-[10px] font-black uppercase"
                                     onChange={(e) => {
                                       if (e.target.value) {
-                                        enrollDegree(d.level as any, e.target.value);
+                                        const rect = (e.target as HTMLElement).getBoundingClientRect();
+                                        enrollDegree(d.level as any, e.target.value, { clientX: rect.left, clientY: rect.top } as any);
                                         setSelectedPropertyId(null);
                                       }
                                     }}
@@ -2196,8 +2314,8 @@ const App: React.FC = () => {
                          <div key={n.name} className="flex-none w-[240px] p-4 border-2 border-slate-100 rounded-2xl space-y-3">
                             <p className="font-black text-slate-900">{n.name} <span className="text-[10px] text-orange-500">Prestige: {n.prestige}</span></p>
                             <div className="grid grid-cols-1 gap-2">
-                               <button onClick={() => { buyHouse(n, 'RENT'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-blue-50 text-blue-600 py-3 rounded-xl">LOUER ({n.rent.toLocaleString()}/m)</button>
-                               <button onClick={() => { buyHouse(n, 'OWN'); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-emerald-50 text-emerald-600 py-3 rounded-xl">ACHETER ({n.basePrice.toLocaleString()})</button>
+                               <button onClick={(e) => { buyHouse(n, 'RENT', e); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-blue-50 text-blue-600 py-3 rounded-xl">LOUER ({n.rent.toLocaleString()}/m)</button>
+                               <button onClick={(e) => { buyHouse(n, 'OWN', e); setSelectedPropertyId(null); }} className="text-[10px] font-black bg-emerald-50 text-emerald-600 py-3 rounded-xl">ACHETER ({n.basePrice.toLocaleString()})</button>
                             </div>
                          </div>
                        ))}
@@ -2205,7 +2323,7 @@ const App: React.FC = () => {
                    ) : (
                      <div className="flex flex-row gap-4 overflow-x-auto no-scrollbar pb-2">
                        {FURNITURE_ITEMS.map(f => (
-                         <button key={f.id} onClick={() => buyFurniture(f, selectedPropertyId)} className="flex-none w-[200px] flex flex-col justify-between items-start p-4 border-2 border-slate-100 rounded-2xl gap-4">
+                         <button key={f.id} onClick={(e) => buyFurniture(f, selectedPropertyId, e)} className="flex-none w-[200px] flex flex-col justify-between items-start p-4 border-2 border-slate-100 rounded-2xl gap-4">
                             <div className="text-left">
                               <p className="text-sm font-bold leading-tight">{f.name}</p>
                               <p className="text-[8px] text-emerald-600 font-black uppercase mt-1">Santé +{f.healthBonus}<br/>Bonheur +{f.happinessBonus}</p>
